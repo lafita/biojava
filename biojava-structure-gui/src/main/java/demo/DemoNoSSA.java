@@ -24,6 +24,7 @@ package demo;
 
 import java.io.IOException;
 
+import javax.vecmath.Matrix4d;
 import javax.vecmath.Vector3d;
 
 import org.biojava.nbio.structure.Atom;
@@ -61,7 +62,13 @@ public class DemoNoSSA {
 		Atom[] ca1 = StructureTools.getAtomCAArray(structure1);
 		Atom[] ca2 = StructureTools.getAtomCAArray(structure2);
 		
-		Calc.translate(structure1, new Vector3d(1.0,1.0,1.0));
+		Matrix4d t = new Matrix4d(new double[] {
+			1.0,0.0,0.5,1.0,
+			0.0,1.0,0.0,1.0,
+			0.0,0.0,1.0,1.0,
+			0.5,0.0,0.0,1.0});
+		
+		Calc.transform(structure2, t);
 
 		AFPChain afpChain = algorithm.align(ca1,ca2);
 

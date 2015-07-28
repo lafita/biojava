@@ -36,7 +36,8 @@ import java.util.List;
 public class NoSSAParameters implements ConfigStrucAligParams {
 
 	private double epsilon;
-	private double angleStep;
+	private int afpSize;
+	private double maxAfpRMSD;
 
 	public NoSSAParameters(){
 		reset();
@@ -49,7 +50,9 @@ public class NoSSAParameters implements ConfigStrucAligParams {
 
 	@Override
 	public void reset(){
-		epsilon = 0.0001;
+		epsilon = 0.001;
+		afpSize = 8;
+		maxAfpRMSD = 2.0;
 	}
 
 	public double getEpsilon(){
@@ -60,11 +63,31 @@ public class NoSSAParameters implements ConfigStrucAligParams {
 		this.epsilon = epsilon;
 	}
 
+	public int getAfpSize() {
+		return afpSize;
+	}
+
+	public void setAfpSize(Integer afpSize) {
+		this.afpSize = afpSize;
+	}
+
+	public double getMaxAfpRMSD() {
+		return maxAfpRMSD;
+	}
+
+	public void setMaxAfpRMSD(Double maxAfpRMSD) {
+		this.maxAfpRMSD = maxAfpRMSD;
+	}
+
 	@Override
 	public List<String> getUserConfigHelp() {
 		List<String> params =new ArrayList<String>();
-		String epsilon = "Maximum allowed vector difference.";
+		String epsilon = "Maximum allowed transformation difference.";
+		String afpSize = "Size of the structure fragments aligned.";
+		String maxAfpRMSD = "Maximum allowed RMSD between the AFPs.";
 		params.add(epsilon);
+		params.add(afpSize);
+		params.add(maxAfpRMSD);
 		return params;
 	}
 
@@ -72,6 +95,8 @@ public class NoSSAParameters implements ConfigStrucAligParams {
 	public List<String> getUserConfigParameters() {
 		List<String> params = new ArrayList<String>();
 		params.add("Epsilon");
+		params.add("AfpSize");
+		params.add("MaxAfpRMSD");
 		return params;
 	}
 
@@ -79,6 +104,8 @@ public class NoSSAParameters implements ConfigStrucAligParams {
 	public List<String> getUserConfigParameterNames(){
 		List<String> params = new ArrayList<String>();
 		params.add("Epsilon");
+		params.add("AFP Size");
+		params.add("Max AFP RMSD");
 		return params;
 	}
 
@@ -87,6 +114,8 @@ public class NoSSAParameters implements ConfigStrucAligParams {
 	public List<Class> getUserConfigTypes() {
 		List<Class> params = new ArrayList<Class>();
 		params.add(Double.class);
+		params.add(Double.class);
+		params.add(Integer.class);
 		return params;
 	}
 
