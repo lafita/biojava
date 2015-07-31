@@ -47,7 +47,7 @@ public class DemoOrientBioAssembly {
 
         //String[] pdbIDs = new String[]{"4HHB","4AQ5","1LTI","1STP","4F88","2W6E","2LXC","3OE7","4INU","4D8s","4EAR","4IYQ","3ZKR"};
 
-        String[] pdbIDs = new String[]{"4x2s"};
+        String[] pdbIDs = new String[]{"4WYV"};
 
         int bioAssemblyNr = 1;
 
@@ -70,7 +70,8 @@ public class DemoOrientBioAssembly {
 
 			Helical
 
-			1B47
+			TP: 1B47, 
+			FP: 3MOP, 3OQ9, 4WYV
 
 		 */
 

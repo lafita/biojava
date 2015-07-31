@@ -50,7 +50,7 @@ public class NoSSAParameters implements ConfigStrucAligParams {
 
 	@Override
 	public void reset(){
-		epsilon = 0.05;
+		epsilon = 0.07;
 		afpSize = 8;
 		maxAfpRMSD = 2.0;
 	}

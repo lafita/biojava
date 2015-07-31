@@ -260,8 +260,7 @@ public class NoSSAMain implements StructureAlignment {
 
 	private static double compareTransforms(Matrix4d a, Matrix4d b){
 
-		//The error is the difference between translation direction
-		//and axis of rotation direction
+		//Error: translation, rotation axis, angle
 		double error = 0;
 		
 		//Normalize the translation vector direction
@@ -270,8 +269,9 @@ public class NoSSAMain implements StructureAlignment {
 		v1.normalize();
 		v2.normalize();
 		
-		error += 1.0-(Math.abs(v1.dot(v2)));
+		error += 1.0-v1.dot(v2);
 
+		//Obtain the normalized axis vector
 		AxisAngle4d axis1 = new AxisAngle4d();
 		axis1.set(a);
 		AxisAngle4d axis2 = new AxisAngle4d();
@@ -283,6 +283,8 @@ public class NoSSAMain implements StructureAlignment {
 		r2.normalize();
 		
 		error += 1.0-(Math.abs(r1.dot(r2)));
+		
+		error += Math.abs(axis1.angle - axis2.angle);
 
 		return error;
 	}

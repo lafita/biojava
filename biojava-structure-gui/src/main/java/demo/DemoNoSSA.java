@@ -62,8 +62,8 @@ public class DemoNoSSA {
 		
 		/*Matrix4d t = new Matrix4d(new double[] {
 			1, 0, 0,1,
-			0,-1, 0,1,
 			0, 0,-1,1,
+			0, 1, 0,1,
 			0, 0, 0,1});
 		
 		Calc.transform(structure2, t);*/
