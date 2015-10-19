@@ -1,9 +1,9 @@
 package org.biojava.nbio.structure.align.multiple;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * Abstact implementation of the {@link ScoresCache} with the shared code used
@@ -14,11 +14,13 @@ import java.util.Set;
  *
  */
 public abstract class AbstractScoresCache implements ScoresCache {
+	
 	private Map<String,Double> scores = null;
 
 	protected AbstractScoresCache() {
 		scores = null;
 	}
+	
 	protected AbstractScoresCache(AbstractScoresCache cache) {
 		this.scores = cache.scores;
 	}
@@ -26,7 +28,7 @@ public abstract class AbstractScoresCache implements ScoresCache {
 	@Override
 	public void putScore(String property, Double score) {
 		if(scores == null) {
-			scores = new HashMap<String, Double>();
+			scores = new TreeMap<String, Double>();
 		}
 		scores.put(property, score);
 	}

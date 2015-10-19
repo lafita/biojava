@@ -91,6 +91,7 @@ public class QuatSymmetryDetector {
 			return;
 		}
 		complete = true;
+		//Cluster chains by sequence
 		ClusterProteinChains clusterer = new ClusterProteinChains(structure, parameters);
 		proteinChainCount = clusterer.getProteinChainCount();
 		
@@ -105,6 +106,7 @@ public class QuatSymmetryDetector {
 		Arrays.sort(thresholds);
 		
 		for (int index = 0; index < thresholds.length; index++) {
+			// Map structure info to the sequence cluster
 			ChainClusterer chainClusterer = new ChainClusterer(clusterer.getSequenceAlignmentClusters(thresholds[index]));
 			
 			// determine global symmetry
@@ -133,7 +135,7 @@ public class QuatSymmetryDetector {
 						addToLocalSymmetry(result, lSymmetry);
 						
 						double time = (System.nanoTime()- start)/1000000000;
-						if (time > ((QuatSymmetryParameters) parameters).getLocalTimeLimit()) {
+						if (time > parameters.getLocalTimeLimit()) {
 							System.out.println("Warning: QuatSymmetryDetector: Exceeded time limit for local symmetry calculations: " + time +
 									" seconds. Results may be incomplete");
 							break;
