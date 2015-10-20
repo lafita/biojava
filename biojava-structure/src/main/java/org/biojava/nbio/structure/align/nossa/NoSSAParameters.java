@@ -28,84 +28,52 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** 
- * Contains the parameters that can be sent to NoSSA.
+ * Contains the parameters that can be sent to the NoSSA
+ * algorithm.
  * 
  * @author Aleix Lafita
  *
  */
 public class NoSSAParameters implements ConfigStrucAligParams {
 
-	private double epsilon;
-	private int afpSize;
-	private double maxAfpRMSD;
+	private int minSSEsize;
 
 	public NoSSAParameters(){
 		reset();
 	}
 
 	@Override
-	public String toString() {
-		return "NoSSAParameters [epsilon=" + epsilon + "]";
-	}
-
-	@Override
 	public void reset(){
-		epsilon = 0.07;
-		afpSize = 8;
-		maxAfpRMSD = 2.0;
+		minSSEsize = 3;
 	}
 
-	public double getEpsilon(){
-		return epsilon;
-	}
-	
-	public void setEpsilon(Double epsilon) {
-		this.epsilon = epsilon;
+	public int getMinSSEsize() {
+		return minSSEsize;
 	}
 
-	public int getAfpSize() {
-		return afpSize;
-	}
-
-	public void setAfpSize(Integer afpSize) {
-		this.afpSize = afpSize;
-	}
-
-	public double getMaxAfpRMSD() {
-		return maxAfpRMSD;
-	}
-
-	public void setMaxAfpRMSD(Double maxAfpRMSD) {
-		this.maxAfpRMSD = maxAfpRMSD;
+	public void setMinSSEsize(int minSSEsize) {
+		this.minSSEsize = minSSEsize;
 	}
 
 	@Override
 	public List<String> getUserConfigHelp() {
 		List<String> params =new ArrayList<String>();
-		String epsilon = "Maximum allowed transformation difference.";
-		String afpSize = "Size of the structure fragments aligned.";
-		String maxAfpRMSD = "Maximum allowed RMSD between the AFPs.";
-		params.add(epsilon);
-		params.add(afpSize);
-		params.add(maxAfpRMSD);
+		String minSSEsize = "Minimum size of the SS elements.";
+		params.add(minSSEsize);
 		return params;
 	}
 
 	@Override
 	public List<String> getUserConfigParameters() {
 		List<String> params = new ArrayList<String>();
-		params.add("Epsilon");
-		params.add("AfpSize");
-		params.add("MaxAfpRMSD");
+		params.add("MinSSEsize");
 		return params;
 	}
 
 	@Override
 	public List<String> getUserConfigParameterNames(){
 		List<String> params = new ArrayList<String>();
-		params.add("Epsilon");
-		params.add("AFP Size");
-		params.add("Max AFP RMSD");
+		params.add("Min SSE Size");
 		return params;
 	}
 
@@ -113,8 +81,6 @@ public class NoSSAParameters implements ConfigStrucAligParams {
 	@SuppressWarnings("rawtypes")
 	public List<Class> getUserConfigTypes() {
 		List<Class> params = new ArrayList<Class>();
-		params.add(Double.class);
-		params.add(Double.class);
 		params.add(Integer.class);
 		return params;
 	}
