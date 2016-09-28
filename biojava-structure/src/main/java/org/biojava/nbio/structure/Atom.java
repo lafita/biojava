@@ -103,6 +103,16 @@ public interface Atom extends Cloneable, PDBRecord {
 	public double[] getCoords() ;
 	
 	/**
+	 * Set the coordinates.
+	 * <p> 
+	 * Internally the coordinates are represented as Point3d so this 
+	 * is recommended over {@link #setCoords()}
+	 * @param c a reference to the Point3d coordinates
+	 * @see #setCoords()
+	 */
+	public void setCoordsAsPoint3d(Point3d c);	
+	
+	/**
 	 * Get the coordinates.
 	 * <p> 
 	 * Internally the coordinates are represented as Point3d so this 

@@ -124,6 +124,11 @@ public class AtomImpl implements Atom, Serializable, PDBRecord {
 	public Point3d getCoordsAsPoint3d() {
 		return coords;
 	}
+	
+	@Override
+	public void setCoordsAsPoint3d(Point3d c) {
+		coords = c;
+	}
 
 	@Override
 	public void setX(double x) {
