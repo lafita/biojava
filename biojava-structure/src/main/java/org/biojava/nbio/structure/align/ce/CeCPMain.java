@@ -21,23 +21,20 @@
  * Author: Spencer Bliven
  *
  */
-
 package org.biojava.nbio.structure.align.ce;
-
 
 import org.biojava.nbio.structure.*;
 import org.biojava.nbio.structure.align.model.AFPChain;
 import org.biojava.nbio.structure.align.util.AFPAlignmentDisplay;
 import org.biojava.nbio.structure.align.util.ConfigurationException;
-import org.biojava.nbio.structure.geometry.Matrices;
 import org.biojava.nbio.structure.geometry.SuperPositions;
-import org.biojava.nbio.structure.jama.Matrix;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.vecmath.GMatrix;
 import javax.vecmath.Matrix4d;
 
 /**
@@ -180,7 +177,8 @@ public class CeCPMain extends CeMain {
 
 
 
-	/** Circular permutation specific code to be run after the standard CE alignment
+	/** 
+	 * Circular permutation specific code to be run after the standard CE alignment
 	 *
 	 * @param afpChain The finished alignment
 	 * @param ca1 CA atoms of the first protein
@@ -204,16 +202,18 @@ public class CeCPMain extends CeMain {
 	public static AFPChain postProcessAlignment(AFPChain afpChain, Atom[] ca1, Atom[] ca2m,CECalculator calculator, CECPParameters param ) throws StructureException{
 
 		// remove bottom half of the matrix
-		Matrix doubledMatrix = afpChain.getDistanceMatrix();
+		GMatrix doubledMatrix = afpChain.getDistanceMatrix();
 
 		// the matrix can be null if the alignment is too short.
 		if ( doubledMatrix != null ) {
-			assert(doubledMatrix.getRowDimension() == ca1.length);
-			assert(doubledMatrix.getColumnDimension() == ca2m.length);
+			assert(doubledMatrix.getNumRow() == ca1.length);
+			assert(doubledMatrix.getNumCol() == ca2m.length);
 
-			Matrix singleMatrix = doubledMatrix.getMatrix(0, ca1.length-1, 0, (ca2m.length/2)-1);
-			assert(singleMatrix.getRowDimension() == ca1.length);
-			assert(singleMatrix.getColumnDimension() == (ca2m.length/2));
+			GMatrix singleMatrix = new GMatrix(ca1.length-1, (ca2m.length/2)-1);
+			doubledMatrix.copySubMatrix(0, ca1.length-1, 0, (ca2m.length/2)-1, 0, 0, singleMatrix);
+			
+			assert(singleMatrix.getNumRow() == ca1.length);
+			assert(singleMatrix.getNumCol() == (ca2m.length/2));
 
 			afpChain.setDistanceMatrix(singleMatrix);
 		}
@@ -231,6 +231,7 @@ public class CeCPMain extends CeMain {
 	 * @return
 	 */
 	public AFPChain invertAlignment(AFPChain a) {
+		
 		String name1 = a.getName1();
 		String name2 = a.getName2();
 		a.setName1(name2);
@@ -248,7 +249,7 @@ public class CeCPMain extends CeMain {
 		a.setAlnseq1(a.getAlnseq2());
 		a.setAlnseq2(alnseq1);
 
-		Matrix distab1 = a.getDisTable1();
+		GMatrix distab1 = a.getDisTable1();
 		a.setDisTable1(a.getDisTable2());
 		a.setDisTable2(distab1);
 
@@ -279,22 +280,19 @@ public class CeCPMain extends CeMain {
 		}
 		a.setOptAln(optAln); // triggers invalidate()
 
-		Matrix distmat = a.getDistanceMatrix();
+		GMatrix distmat = a.getDistanceMatrix();
 		if(distmat != null)
-			a.setDistanceMatrix(distmat.transpose());
+			distmat.transpose();
 
 
 		// invert the rotation matrices
-		Matrix[] blockRotMat = a.getBlockRotationMatrix();
-		Atom[] shiftVec = a.getBlockShiftVector();
-		if( blockRotMat != null) {
+		Matrix4d[] blockTrans = a.getBlockTransformation();
+		
+		if( blockTrans != null) {
 			for(int block = 0; block < a.getBlockNum(); block++) {
-				if(blockRotMat[block] != null) {
-					// if y=x*A+b, then x=y*inv(A)-b*inv(A)
-					blockRotMat[block] = blockRotMat[block].inverse();
-
-					Calc.rotate(shiftVec[block],blockRotMat[block]);
-					shiftVec[block] = Calc.invert(shiftVec[block]);
+				if(blockTrans[block] != null) {
+					// if y=x*A, then x=y*inv(A)
+					blockTrans[block].invert();
 				}
 			}
 		}
@@ -491,17 +489,13 @@ public class CeCPMain extends CeMain {
 		double rmsd = -1;
 		double tmScore = 0.;
 		double[] blockRMSDs = new double[blocks.size()];
-		Matrix[] blockRotationMatrices = new Matrix[blocks.size()];
-		Atom[] blockShifts = new Atom[blocks.size()];
+		Matrix4d[] blockTransform = new Matrix4d[blocks.size()];
 
 		if(alignLen>0) {
 			
 			// superimpose
 			Matrix4d trans = SuperPositions.superpose(Calc.atomsToPoints(atoms1), 
 					Calc.atomsToPoints(atoms2));
-
-			Matrix matrix = Matrices.getRotationJAMA(trans);
-			Atom shift = Calc.getTranslationVector(trans);
 
 			for( Atom a : atoms2 ) 
 				Calc.transform(a.getGroup(), trans);
@@ -510,24 +504,21 @@ public class CeCPMain extends CeMain {
 			rmsd = Calc.rmsd(atoms1, atoms2);
 			tmScore = Calc.getTMScore(atoms1, atoms2, ca1.length, ca2len);
 
-			// set all block rotations to the overall rotation
+			// set all block transform to the overall transform
 			// It's not well documented if this is the expected behavior, but
 			// it seems to work.
-			blockRotationMatrices[0] = matrix;
-			blockShifts[0] = shift;
+			blockTransform[0] = trans;
 			blockRMSDs[0] = -1;
 
 			for(int i=1;i<blocks.size();i++) {
 				blockRMSDs[i] = -1; //TODO Recalculate for the FATCAT text format
-				blockRotationMatrices[i] = (Matrix) blockRotationMatrices[0].clone();
-				blockShifts[i] = (Atom) blockShifts[0].clone();
+				blockTransform[i] = (Matrix4d) blockTransform[0].clone();
 			}
 
 		}
 		newAFPChain.setOptRmsd(blockRMSDs);
 		newAFPChain.setBlockRmsd(blockRMSDs);
-		newAFPChain.setBlockRotationMatrix(blockRotationMatrices);
-		newAFPChain.setBlockShiftVector(blockShifts);
+		newAFPChain.setBlockTransformation(blockTransform);
 		newAFPChain.setTotalRmsdOpt(rmsd);
 		newAFPChain.setTMScore( tmScore );
 

@@ -34,18 +34,15 @@ import org.biojava.nbio.structure.StructureTools;
 import org.biojava.nbio.structure.align.model.AFP;
 import org.biojava.nbio.structure.align.model.AFPChain;
 import org.biojava.nbio.structure.align.util.AFPAlignmentDisplay;
-import org.biojava.nbio.structure.geometry.Matrices;
 import org.biojava.nbio.structure.geometry.SuperPositions;
-import org.biojava.nbio.structure.jama.Matrix;
 import org.biojava.nbio.core.sequence.compound.AminoAcidCompound;
 import org.biojava.nbio.core.sequence.compound.AminoAcidCompoundSet;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.vecmath.GMatrix;
 import javax.vecmath.Matrix4d;
-
-
 
 /** This is based on the original Combinatorial Extension (CE) source code from 2003 or 2004 (CE version 2.3),
  * as has been originally developed by I. Shindyalov and P.Bourne (1998).
@@ -55,7 +52,6 @@ import javax.vecmath.Matrix4d;
  * and not about Java style.
  *
  * @author Andreas Prlic
-
  *
  */
 public class CECalculator {
@@ -95,8 +91,7 @@ public class CECalculator {
 
 	private int lcmp;
 	private int[] bestTraceLen;
-	private Matrix r;
-	private Atom t;
+	private Matrix4d tr;
 	protected int nTraces;
 
 	private double z;
@@ -1377,7 +1372,7 @@ nBestTrace=nTrace;
 			nAtomPrev=nAtom;
 			oRmsdThr += distanceIncrement;
 
-			rot_mol(ca2, ca3, nse2, r,t);
+			rot_mol(ca2, ca3, nse2, tr);
 
 			for(int ise1=0; ise1<nse1; ise1++) {
 				for(int ise2=0; ise2<nse2; ise2++) {
@@ -1513,7 +1508,9 @@ nBestTrace=nTrace;
 
 	}
 
-	/** Modifies an alignment matrix by favoring the alignment of similar and identical amino acids and penalizing the alignment of unrelated ones.
+	/** 
+	 * Modifies an alignment matrix by favoring the alignment of similar and 
+	 * identical amino acids and penalizing the alignment of unrelated ones.
 	 *
 	 * @param max alignment matrix
 	 * @param ca1 Atoms for protein 1
@@ -1521,8 +1518,8 @@ nBestTrace=nTrace;
 	 * @param params alignment parameters
 	 * @return modified alignment matrix
 	 */
-	public static double[][] updateMatrixWithSequenceConservation(double[][] max, Atom[] ca1, Atom[] ca2, CeParameters params) {
-		Matrix origM = new Matrix(max);
+	public static double[][] updateMatrixWithSequenceConservation(double[][] max, 
+			Atom[] ca1, Atom[] ca2, CeParameters params) {
 
 		SubstitutionMatrix<AminoAcidCompound> substMatrix =
 			params.getSubstitutionMatrix();
@@ -1536,9 +1533,9 @@ nBestTrace=nTrace;
 
 		AminoAcidCompoundSet set = AminoAcidCompoundSet.getAminoAcidCompoundSet();
 
-		for (int i = 0 ; i < origM.getRowDimension() ; i++){
-			for ( int j =0; j < origM.getColumnDimension() ; j ++ ) {
-				double val = origM.get(i,j);
+		for (int i = 0 ; i < max.length ; i++){
+			for ( int j =0; j < max[0].length ; j ++ ) {
+				double val = max[i][j];
 				Atom a1 = ca1[i];
 				Atom a2 = ca2[j];
 
@@ -1557,14 +1554,9 @@ nBestTrace=nTrace;
 
 
 				val += weightedScore;
-				origM.set(i,j,val);
-
+				max[i][j] = val;
 			}
 		}
-		max = origM.getArray();
-
-		//SymmetryTools.showMatrix((Matrix)origM.clone(), "in optimizer "  + loopCount  );
-		//SymmetryTools.showMatrix(origM, "iteration  matrix " + loopCount + " after");
 
 		return max;
 	}
@@ -1850,17 +1842,15 @@ nBestTrace=nTrace;
 
 
 
-	private void rot_mol(Atom[] caA, Atom[] caB, int nse2, Matrix m , Atom shift) throws StructureException{
-
-
+	private void rot_mol(Atom[] caA, Atom[] caB, 
+			int nse2, Matrix4d m) throws StructureException{
 
 		for(int l=0; l<nse2; l++) {
 			Atom a = caA[l];
-			Group g = (Group)a.getGroup().clone();
+			Group g = (Group) a.getGroup().clone();
 			//Group g = (Group)a.getParent();
 
-			Calc.rotate( g, m);
-			Calc.shift(  g, shift);
+			Calc.transform(g, m);
 			caB[l] = g.getAtom(a.getName());
 		}
 	}
@@ -1896,7 +1886,8 @@ nBestTrace=nTrace;
 	 * @deprecated Use {@link #calc_rmsd(Atom[],Atom[],int,boolean)} instead
 	 */
 	@Deprecated
-	public double calc_rmsd(Atom[] pro1, Atom[] pro2, int strLen, boolean storeTransform, boolean show) throws StructureException {
+	public double calc_rmsd(Atom[] pro1, Atom[] pro2, int strLen, 
+			boolean storeTransform, boolean show) throws StructureException {
 		return calc_rmsd(pro1, pro2, strLen, storeTransform);
 	}
 
@@ -1918,13 +1909,10 @@ nBestTrace=nTrace;
 		Matrix4d trans = SuperPositions.superpose(Calc.atomsToPoints(cod1), 
 				Calc.atomsToPoints(cod2));
 
-		Matrix matrix = Matrices.getRotationJAMA(trans);
-		Atom shift = Calc.getTranslationVector(trans);
-
 		if ( storeTransform) {
-			r = matrix;
-			t = shift;
+			tr = trans;
 		}
+		
 		for (Atom a : cod2)
 			Calc.transform(a.getGroup(), trans);
 			
@@ -2138,39 +2126,42 @@ nBestTrace=nTrace;
 
 		 afpChain.setBlockNum(1);
 		 //afpChain.setAlignScore(z);
-		 Matrix[] m ;
+		 Matrix4d[] m ;
 
-		 if ( r != null ) {
-			 m = new Matrix[1];
-			 m[0] = r;
+		 if ( tr != null ) {
+			 m = new Matrix4d[1];
+			 m[0] = tr;
 		 } else  {
-			 m = new Matrix[0];
+			 m = new Matrix4d[0];
 		 }
 
-		 Atom[] as ;
-		 if ( t != null) {
-			 as = new Atom[1];
-			 as[0] = t;
-		 } else {
-			 as = new Atom[0];
-		 }
-
-		 afpChain.setBlockRotationMatrix(m);
-		 afpChain.setBlockShiftVector(as);
+		 afpChain.setBlockTransformation(m);
 
 		 int nse1 = ca1.length;
 		 int nse2 = ca2.length;
 		 //System.out.println("dist1 :" + dist1.length + " " + dist2.length);
 
-		 if ( nse1 > 0 && dist1.length > 0 )
-			 afpChain.setDisTable1(new Matrix(dist1));
-		 else
-			 afpChain.setDisTable1 (Matrix.identity(3, 3));
-		 if ( nse2 > 0 && dist2.length > 0 )
-			 afpChain.setDisTable2(new Matrix(dist2));
-		 else
-			 afpChain.setDisTable2(Matrix.identity(3, 3));
-
+		 if ( nse1 > 0 && dist1.length > 0 ) {
+			 GMatrix mat = new GMatrix(nse1, nse1);
+			 for (int c = 0; c < nse1; c++) {
+				 mat.setRow(c, dist1[c]);
+			 }
+			 afpChain.setDisTable1(mat);
+		 } else {
+			 GMatrix mat = new GMatrix(3, 3);
+			 mat.setIdentity();
+			 afpChain.setDisTable2(mat);
+		 } if ( nse2 > 0 && dist2.length > 0 ) {
+			 GMatrix mat = new GMatrix(nse2, nse2);
+			 for (int c = 0; c < nse2; c++) {
+				 mat.setRow(c, dist2[c]);
+			 }
+			 afpChain.setDisTable1(mat);
+		 } else {
+			 GMatrix mat = new GMatrix(3, 3);
+			 mat.setIdentity();
+			 afpChain.setDisTable2(mat);
+		 }
 
 		 char[] alnseq1 = new char[nse1+nse2+1];
 		 char[] alnseq2 = new char[nse1+nse2+1] ;
@@ -2307,21 +2298,12 @@ nBestTrace=nTrace;
 	 }
 
 	 /**
-	  * Gets the rotation matrix from the last call to
+	  * Gets the transformation matrix from the last call to
 	  * {@link #calc_rmsd(Atom[], Atom[], int, boolean) calc_rmsd}.
-	  * @return The rotatiokn matrix
+	  * @return The transformation matrix
 	  */
-	 public Matrix getRotationMatrix() {
-		 return r;
-	 }
-
-	 /**
-	  * Gets the shift from the last call to
-	  * {@link #calc_rmsd(Atom[], Atom[], int, boolean) calc_rmsd}.
-	  * @return The shift
-	  */
-	 public Atom getShift() {
-		 return t;
+	 public Matrix4d getTransformation() {
+		 return tr;
 	 }
 
 	public double[][] getDist1() {

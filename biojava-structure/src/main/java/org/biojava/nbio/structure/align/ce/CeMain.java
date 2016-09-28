@@ -25,13 +25,14 @@
 package org.biojava.nbio.structure.align.ce;
 
 
+import javax.vecmath.GMatrix;
+
 import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.Group;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.align.AbstractStructureAlignment;
 import org.biojava.nbio.structure.align.StructureAlignment;
 import org.biojava.nbio.structure.align.model.AFPChain;
-import org.biojava.nbio.structure.jama.Matrix;
 
 /** The main class of the Java implementation of the Combinatorial Extension Algorithm (CE),
  * as has been originally developed by I. Shindyalov and P.Bourne (1998).
@@ -127,8 +128,13 @@ public class CeMain extends AbstractStructureAlignment implements StructureAlign
 
 		int winSize = params.getWinSize();
 		int winSizeComb1 = (winSize-1)*(winSize-2)/2;
-		double[][] m = calculator.initSumOfDistances(ca1.length, ca2.length, winSize, winSizeComb1, ca1, ca2clone);
-		afpChain.setDistanceMatrix(new Matrix(m));
+		double[][] m = calculator.initSumOfDistances(ca1.length, ca2.length, winSize, 
+				winSizeComb1, ca1, ca2clone);
+		GMatrix mat = new GMatrix(m.length, m[0].length);
+		for (int r = 0; r < m.length; r++) {
+			mat.setRow(r, m[r]);
+		}
+		afpChain.setDistanceMatrix(mat);
 		afpChain.setSequentialAlignment(true);
 
 		return afpChain;
