@@ -77,7 +77,7 @@ import java.util.Locale;
  * @author The MathWorks, Inc. and the National Institute of Standards and Technology.
  * @version 5 August 1998
  */
-
+@Deprecated
 public class Matrix implements Cloneable, java.io.Serializable {
 
 	 static final long serialVersionUID = 8492558293015348719l;
