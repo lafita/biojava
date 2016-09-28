@@ -28,17 +28,21 @@ import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.align.StrucAligParameters;
 import org.biojava.nbio.structure.align.helper.AlignTools;
 import org.biojava.nbio.structure.align.helper.JointFragments;
-import org.biojava.nbio.structure.jama.Matrix;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.logging.Logger;
+
+import javax.vecmath.GMatrix;
+import javax.vecmath.Matrix4d;
 
 
-/** Joins the initial Fragments together to larger Fragments
+/** 
+ * Joins the initial Fragments together to larger Fragments
  *
  * @author Andreas Prlic
  * @author Peter Lackner
@@ -47,7 +51,7 @@ import java.util.logging.Logger;
  */
 public class FragmentJoiner {
 
-	public static Logger logger =  Logger.getLogger("org.biojava.nbio.structure.align");
+	public static final Logger logger =  LoggerFactory.getLogger(FragmentJoiner.class);
 
 	public FragmentJoiner() {
 		super();
@@ -86,7 +90,8 @@ public class FragmentJoiner {
 	 * @param rmsmat
 	 * @return true - if this is a better representant for a group of locala fragments.
 	 */
-	public static boolean reduceFragments(List<FragmentPair> fragments, FragmentPair f, Matrix rmsmat){
+	public static boolean reduceFragments(List<FragmentPair> fragments, FragmentPair f, 
+			GMatrix rmsmat){
 		boolean doNotAdd =false;
 		int i = f.getPos1();
 		int j = f.getPos2();
@@ -97,8 +102,8 @@ public class FragmentJoiner {
 			int di1 = Math.abs(f.getPos1() - tmp.getPos1());
 			int di2 = Math.abs(f.getPos2() - tmp.getPos2());
 			if (( Math.abs(di1-di2) == 2)) {
-				double rms1 = rmsmat.get(tmp.getPos1(),tmp.getPos2());
-				double rms2 = rmsmat.get(i,j);
+				double rms1 = rmsmat.getElement(tmp.getPos1(),tmp.getPos2());
+				double rms2 = rmsmat.getElement(i,j);
 				doNotAdd = true;
 				if ( rms2 < rms1){
 					fragments.remove(p);
@@ -290,7 +295,8 @@ public class FragmentJoiner {
 	 * @param frag the JointFragments object that contains the list of identical positions
 	 * @return the rms
 	 */
-	public static double getRMS(Atom[] ca1, Atom[]ca2,JointFragments frag) throws StructureException {
+	public static double getRMS(Atom[] ca1, Atom[]ca2,JointFragments frag) 
+			throws StructureException {
 		//      now svd ftmp and check if the rms is < X ...
 		AlternativeAlignment ali = new AlternativeAlignment();
 		ali.apairs_from_idxlst(frag);
@@ -300,19 +306,12 @@ public class FragmentJoiner {
 		int[] idx2 = ali.getIdx2();
 
 		Atom[] ca1subset = AlignTools.getFragmentFromIdxList(ca1, idx1);
-
 		Atom[] ca2subset = AlignTools.getFragmentFromIdxList(ca2,idx2);
 
 		ali.calculateSuperpositionByIdx(ca1,ca2);
+		Matrix4d transform = ali.getTransformation();
 
-		Matrix rot = ali.getRotationMatrix();
-		Atom atom = ali.getShift();
-
-		for (Atom a : ca2subset) {
-			Calc.rotate(a, rot);
-			Calc.shift(a, atom);
-		}
-
+		Calc.transform(ca2subset, transform);
 		rms = Calc.rmsd(ca1subset,ca2subset);
 
 		return rms;
@@ -375,10 +374,11 @@ public class FragmentJoiner {
 		List<JointFragments> fll = new ArrayList<JointFragments>();
 
 		double adiff = angleDiff * Math.PI / 180d;
-		logger.finer("addiff" + adiff);
+		logger.debug("addiff" + adiff);
+		
 		//distance between two unit vectors with angle adiff
 		double ddiff = Math.sqrt(2.0-2.0*Math.cos(adiff));
-		logger.finer("ddiff" + ddiff);
+		logger.debug("ddiff" + ddiff);
 
 		// the fpairs in the flist have to be sorted with respect to their positions
 

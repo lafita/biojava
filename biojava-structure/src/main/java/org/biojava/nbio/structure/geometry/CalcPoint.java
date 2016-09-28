@@ -1,10 +1,9 @@
 package org.biojava.nbio.structure.geometry;
 
+import javax.vecmath.Matrix3d;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
-
-import org.biojava.nbio.structure.jama.Matrix;
 
 /**
  * Utility operations on Point3d.
@@ -51,14 +50,28 @@ public class CalcPoint {
 	/**
 	 * Transform all points with a 4x4 transformation matrix.
 	 * 
-	 * @param rotTrans
+	 * @param transform
 	 *            4x4 transformation matrix
 	 * @param x
 	 *            array of points. Point objects will be modified
 	 */
-	public static void transform(Matrix4d rotTrans, Point3d[] x) {
+	public static void transform(Matrix4d transform, Point3d[] x) {
 		for (Point3d p : x) {
-			rotTrans.transform(p);
+			transform.transform(p);
+		}
+	}
+	
+	/**
+	 * Rotate all points with a 3x3 rotation matrix.
+	 * 
+	 * @param rotation
+	 *            3x3 rotation matrix
+	 * @param x
+	 *            array of points. Point objects will be modified
+	 */
+	public static void rotate(Matrix3d rotation, Point3d[] x) {
+		for (Point3d p : x) {
+			rotation.transform(p);
 		}
 	}
 
@@ -98,7 +111,8 @@ public class CalcPoint {
 	 * @param fixed
 	 * @return
 	 */
-	public static Matrix formMatrix(Point3d[] a, Point3d[] b) {
+	public static Matrix4d formMatrix(Point3d[] a, Point3d[] b) {
+		
 		double xx = 0.0, xy = 0.0, xz = 0.0;
 		double yx = 0.0, yy = 0.0, yz = 0.0;
 		double zx = 0.0, zy = 0.0, zz = 0.0;
@@ -115,25 +129,25 @@ public class CalcPoint {
 			zz += a[i].z * b[i].z;
 		}
 
-		double[][] f = new double[4][4];
-		f[0][0] = xx + yy + zz;
-		f[0][1] = zy - yz;
-		f[1][0] = f[0][1];
-		f[1][1] = xx - yy - zz;
-		f[0][2] = xz - zx;
-		f[2][0] = f[0][2];
-		f[1][2] = xy + yx;
-		f[2][1] = f[1][2];
-		f[2][2] = yy - zz - xx;
-		f[0][3] = yx - xy;
-		f[3][0] = f[0][3];
-		f[1][3] = zx + xz;
-		f[3][1] = f[1][3];
-		f[2][3] = yz + zy;
-		f[3][2] = f[2][3];
-		f[3][3] = zz - xx - yy;
+		Matrix4d f = new Matrix4d();
+		f.m00 = xx + yy + zz;
+		f.m01 = zy - yz;
+		f.m10 = f.m01;
+		f.m11 = xx - yy - zz;
+		f.m02 = xz - zx;
+		f.m20 = f.m02;
+		f.m12 = xy + yx;
+		f.m21 = f.m12;
+		f.m22 = yy - zz - xx;
+		f.m13 = yx - xy;
+		f.m30 = f.m13;
+		f.m13 = zx + xz;
+		f.m31 = f.m13;
+		f.m23 = yz + zy;
+		f.m32 = f.m23;
+		f.m33 = zz - xx - yy;
 
-		return new Matrix(f);
+		return f;
 	}
 
 	/**

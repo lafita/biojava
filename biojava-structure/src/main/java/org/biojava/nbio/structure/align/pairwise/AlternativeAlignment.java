@@ -30,13 +30,13 @@ import org.biojava.nbio.structure.align.helper.IndexPair;
 import org.biojava.nbio.structure.align.helper.JointFragments;
 import org.biojava.nbio.structure.geometry.Matrices;
 import org.biojava.nbio.structure.geometry.SuperPositions;
-import org.biojava.nbio.structure.jama.Matrix;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.logging.Logger;
 
+import javax.vecmath.GMatrix;
 import javax.vecmath.Matrix4d;
 
 /**
@@ -70,8 +70,7 @@ public class AlternativeAlignment implements Serializable{
 
 	int nfrags;
 	Atom center;
-	Matrix rot;
-	Atom tr;
+	Matrix4d transform;
 
 
 	// the scores...
@@ -84,12 +83,11 @@ public class AlternativeAlignment implements Serializable{
 	float score;
 	IndexPair[] aligpath;
 	int fromia;
-	Matrix currentRotMatrix;
-	Atom currentTranMatrix;
+	Matrix4d currentTransform;
 
 	double rms;
 
-	Matrix distanceMatrix;
+	GMatrix distanceMatrix;
 
 	public static Logger logger =  Logger.getLogger("org.biojava.nbio.structure.align");
 
@@ -105,18 +103,16 @@ public class AlternativeAlignment implements Serializable{
 		idx2 = new int[0];
 
 		center = new AtomImpl();
-		rot = null;
-		tr = new AtomImpl();
+		transform = null;
+		
 		eqr0 = -99;
 		rms0 = 99;
 		joined = 0;
 		gaps0 = -99;
 		fromia = 0;
 
-		currentRotMatrix = new Matrix(0,0);
-		currentTranMatrix = new AtomImpl();
-
-		distanceMatrix = new Matrix(0,0);
+		currentTransform = new Matrix4d();
+		distanceMatrix = new GMatrix(0,0);
 	}
 
 
@@ -289,23 +285,6 @@ public class AlternativeAlignment implements Serializable{
 		this.fromia = fromia;
 	}
 
-	/** rotate and shift atoms with currentRotMatrix and current Tranmatrix
-	 *
-	 * @param ca
-	 */
-	private void rotateShiftAtoms(Atom[] ca){
-
-		for (int i  = 0 ; i < ca.length; i++){
-			Atom c = ca[i];
-
-			Calc.rotate(c,currentRotMatrix);
-			Calc.shift(c,currentTranMatrix);
-			//System.out.println("after " + c);
-			ca[i] = c;
-		}
-		//System.out.println("after " + ca[0]);
-	}
-
 	public void finish(StrucAligParameters params,Atom[]ca1,Atom[]ca2) throws StructureException{
 
 		Atom[] ca3 = new Atom[ca2.length];
@@ -316,7 +295,7 @@ public class AlternativeAlignment implements Serializable{
 		// do the inital superpos...
 
 		super_pos_alig(ca1,ca3,idx1,idx2,true);
-		rotateShiftAtoms(ca3);
+		Calc.transform(ca3, currentTransform);
 
 		calcScores(ca1,ca2);
 		logger.fine("eqr " + eqr0 + " " + gaps0 + " "  +idx1[0] + " " +idx1[1]);
@@ -325,22 +304,20 @@ public class AlternativeAlignment implements Serializable{
 
 	}
 
-	public static Matrix getDistanceMatrix(Atom[] ca1, Atom[]ca2){
+	public static GMatrix getDistanceMatrix(Atom[] ca1, Atom[] ca2){
 
 		int r = ca1.length;
 		int c = ca2.length;
 
-		Matrix out = new Matrix(r,c);
+		GMatrix out = new GMatrix(r,c);
 
 		for (int i=0; i<r; i++) {
 			Atom a1 = ca1[i];
 			for (int j=0;j<c;j++){
 				Atom b1 = ca2[j];
-
-
+				
 				double d = Calc.getDistance(a1,b1);
-				out.set(i,j,d);
-
+				out.setElement(i,j,d);
 			}
 		}
 		return out;
@@ -500,7 +477,7 @@ public class AlternativeAlignment implements Serializable{
 
 			float  subscore = 0.0f;
 
-			rotateShiftAtoms(ca3);
+			Calc.transform(ca3, currentTransform);
 
 			// do the dynamic alignment...
 			Alignable ali = getInitalStrCompAlignment(ca1,ca3, params);
@@ -542,7 +519,7 @@ public class AlternativeAlignment implements Serializable{
 					(quada_end - quada_beg >= permsize) &&
 					( quadb_end - quadb_beg >= permsize)) {
 				AligMatEl[][] aligmat = ali.getAligMat();
-				Matrix submat = new Matrix(quada_end-quada_beg, quadb_end - quadb_beg) ;
+				GMatrix submat = new GMatrix(quada_end-quada_beg, quadb_end - quadb_beg) ;
 				//then we copy the score values of the quadrant into a new matrix
 
 				//System.out.println(quada_beg + " " + quada_end + " " +quadb_beg+" " + quadb_end);
@@ -560,7 +537,7 @@ public class AlternativeAlignment implements Serializable{
 						//System.out.println(s+" " +t);
 						//double val = sim.get(s,t);
 						double val = aligmat[s][t].getValue();
-						submat.set(s-quada_beg,t-quadb_beg,val);
+						submat.setElement(s-quada_beg,t-quadb_beg,val);
 					}
 				}
 				// and perform a dp alignment again. (Note, that we fix the superposition).
@@ -780,13 +757,11 @@ public class AlternativeAlignment implements Serializable{
 			ca2subset[i] = (Atom) ca2[pos2].clone();
 		}
 
-		Matrix4d trans = SuperPositions.superpose(Calc.atomsToPoints(ca1subset), 
+		currentTransform = SuperPositions.superpose(Calc.atomsToPoints(ca1subset), 
 				Calc.atomsToPoints(ca2subset));
-		this.currentRotMatrix  = Matrices.getRotationJAMA(trans);
-		this.currentTranMatrix = Calc.getTranslationVector(trans);
-		//currentRotMatrix.print(3,3);
+		
 		if ( getRMS) {
-			rotateShiftAtoms(ca2subset);
+			Calc.transform(ca2subset, currentTransform);
 			this.rms = Calc.rmsd(ca1subset,ca2subset);
 		}
 
@@ -794,23 +769,14 @@ public class AlternativeAlignment implements Serializable{
 	}
 
 
-	/** returns the rotation matrix that needs to be applied to structure 2 to rotate on structure 1
+	/** returns the transformation matrix that needs to be applied to structure 2 
+	 * to superpose it on structure 1
 	 *
-	 * @return the rotation Matrix
+	 * @return the transformation Matrix4d
 	 */
-	public Matrix getRotationMatrix(){
-		return currentRotMatrix;
+	public Matrix4d getTransformation(){
+		return currentTransform;
 	}
-
-	/** returns the shift vector that has to be applied on structure to to shift on structure one
-	 *
-	 * @return the shift vector
-	 */
-	public Atom getShift(){
-		return currentTranMatrix;
-	}
-
-
 
 	/** calculates  scores for this alignment ( %id )
 	 * @param ca1 set of Atoms for molecule 1
@@ -836,9 +802,8 @@ public class AlternativeAlignment implements Serializable{
 		}
 	}
 
-
-
-	/** create an artifical Structure object that contains the two
+	/** 
+	 * Create an artifical Structure object that contains the two
 	 * structures superimposed onto each other. Each structure is in a separate model.
 	 * Model 1 is structure 1 and Model 2 is structure 2.
 	 *
@@ -850,15 +815,11 @@ public class AlternativeAlignment implements Serializable{
 		// do not change the original coords ..
 		Structure s3 = s2.clone();
 
-		currentRotMatrix.print(3,3);
-
-		Calc.rotate(s3, currentRotMatrix);
-		Calc.shift( s3, currentTranMatrix);
+		Calc.transform(s3, currentTransform);
 
 		Structure newpdb = new StructureImpl();
 		newpdb.setPDBCode("Java");
 		newpdb.setName("Aligned with BioJava");
-
 
 		newpdb.addModel(s1.getChains(0));
 		newpdb.addModel(s3.getChains(0));
@@ -877,40 +838,28 @@ public class AlternativeAlignment implements Serializable{
 	 */
 	public String toPDB(Structure s1, Structure s2){
 
-
 		Structure newpdb = getAlignedStructure(s1, s2);
-
 		return newpdb.toPDB();
 	}
 
-
-
-	/** The distance matrix this alignment is based on
+	/** The distance matrix this alignment is based on.
 	 *
 	 * @return a Matrix object.
 	 */
-	public Matrix getDistanceMatrix() {
+	public GMatrix getDistanceMatrix() {
 		return distanceMatrix;
 	}
-
-
 
 	/** The distance matrix this alignment is based on
 	 *
 	 * @param distanceMatrix
 	 */
-	public void setDistanceMatrix(Matrix distanceMatrix) {
+	public void setDistanceMatrix(GMatrix distanceMatrix) {
 		this.distanceMatrix = distanceMatrix;
 	}
-
-
-
 
 	public IndexPair[] getPath() {
 		return aligpath;
 	}
 
-
-
 }
-

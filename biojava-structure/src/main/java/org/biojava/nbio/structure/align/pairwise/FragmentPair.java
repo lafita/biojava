@@ -22,11 +22,10 @@
  */
 package org.biojava.nbio.structure.align.pairwise;
 
+import javax.vecmath.Matrix4d;
 
 import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.AtomImpl;
-import org.biojava.nbio.structure.jama.Matrix;
-
 
 /** a pair of fragments of two protein structures
  *
@@ -50,8 +49,7 @@ public class FragmentPair {
 	int covered;
 
 	//filled if fragments are superimposed
-	Matrix rot;
-	Atom trans;
+	Matrix4d transform;
 
 	//this unit vector indicates the rotation of j onto i
 	Atom unitv;
@@ -76,8 +74,8 @@ public class FragmentPair {
 		 unitv.setX(0);
 		 unitv.setY(0);
 		 unitv.setZ(1);
-		 rot = null;
-		 trans = new AtomImpl();
+
+		 transform = null;
 		 center1 = new AtomImpl();
 		 center2 = new AtomImpl();
 
@@ -97,7 +95,7 @@ public class FragmentPair {
 		n.setCovered(covered);
 		n.setRms(rms);
 		n.setLength(length);
-		n.setRot((Matrix)rot.clone());
+		n.setTransform((Matrix4d) transform.clone());
 		n.setUnitv((Atom)unitv.clone());
 
 		return n;
@@ -158,20 +156,12 @@ public class FragmentPair {
 		this.rms = rms;
 	}
 
-	public Matrix getRot() {
-		return rot;
+	public Matrix4d getTransform() {
+		return transform;
 	}
 
-	public void setRot(Matrix rot) {
-		this.rot = rot;
-	}
-
-	public Atom getTrans() {
-		return trans;
-	}
-
-	public void setTrans(Atom trans) {
-		this.trans = trans;
+	public void setTransform(Matrix4d transform) {
+		this.transform = transform;
 	}
 
 	public Atom getUnitv() {

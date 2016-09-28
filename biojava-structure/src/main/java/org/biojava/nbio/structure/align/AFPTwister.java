@@ -29,9 +29,8 @@ package org.biojava.nbio.structure.align;
 import org.biojava.nbio.structure.*;
 import org.biojava.nbio.structure.align.model.AFP;
 import org.biojava.nbio.structure.align.model.AFPChain;
-import org.biojava.nbio.structure.geometry.Matrices;
 import org.biojava.nbio.structure.geometry.SuperPositions;
-import org.biojava.nbio.structure.jama.Matrix;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -265,26 +264,19 @@ public class AFPTwister {
 		Matrix4d transform = SuperPositions.superpose(Calc.atomsToPoints(cod1),
 				Calc.atomsToPoints(cod2));
 
-		Matrix r = Matrices.getRotationJAMA(transform);
-		Atom t = Calc.getTranslationVector(transform);
-
 		logger.debug("transPdb: transforming orig coordinates with matrix: {}",
-				r);
+				transform);
 
 		if (afpChain != null) {
-			Matrix[] ms = afpChain.getBlockRotationMatrix();
+			
+			Matrix4d[] ms = afpChain.getBlockTransformation();
+			
 			if (ms == null)
-				ms = new Matrix[afpChain.getBlockNum()];
+				ms = new Matrix4d[afpChain.getBlockNum()];
 
-			ms[blockNr] = r;
+			ms[blockNr] = transform;
 
-			Atom[] shifts = afpChain.getBlockShiftVector();
-			if (shifts == null)
-				shifts = new Atom[afpChain.getBlockNum()];
-			shifts[blockNr] = t;
-
-			afpChain.setBlockRotationMatrix(ms);
-			afpChain.setBlockShiftVector(shifts);
+			afpChain.setBlockTransformation(ms);
 		}
 
 		for (Atom a : ca2)

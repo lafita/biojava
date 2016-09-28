@@ -21,9 +21,9 @@
  * Author: Andreas Prlic
  *
  */
-
 package org.biojava.nbio.structure.align;
 
+import javax.vecmath.Matrix4d;
 
 import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.Group;
@@ -33,8 +33,6 @@ import org.biojava.nbio.structure.align.ce.ConfigStrucAligParams;
 import org.biojava.nbio.structure.align.helper.IndexPair;
 import org.biojava.nbio.structure.align.model.AFPChain;
 import org.biojava.nbio.structure.align.pairwise.AlternativeAlignment;
-import org.biojava.nbio.structure.jama.Matrix;
-
 
 /** Wrapper for the BioJava Structure Alignment Implementation
  *
@@ -120,13 +118,14 @@ implements StructureAlignment  {
 
 
 
-	private void copyResults(AFPChain afpChain, AlternativeAlignment altAlig, Atom[] ca1, Atom[] ca2) {
+	private void copyResults(AFPChain afpChain, AlternativeAlignment altAlig, 
+			Atom[] ca1, Atom[] ca2) {
+		
 		afpChain.setAlgorithmName(getAlgorithmName());
 		afpChain.setVersion(getVersion());
 		afpChain.setAlignScore(altAlig.getScore());
 		afpChain.setOptLength(altAlig.getEqr());
-		afpChain.setBlockRotationMatrix(new Matrix[]{altAlig.getRotationMatrix()});
-		afpChain.setBlockShiftVector(new Atom[]{altAlig.getShift() });
+		afpChain.setBlockTransformation(new Matrix4d[]{altAlig.getTransformation()});
 		afpChain.setBlockNum(1);
 
 		double rmsd = altAlig.getRmsd();

@@ -31,7 +31,6 @@ import org.biojava.nbio.structure.geometry.Matrices;
 import org.biojava.nbio.structure.geometry.SuperPositions;
 import org.biojava.nbio.structure.io.PDBFileParser;
 import org.biojava.nbio.structure.io.PDBFileReader;
-import org.biojava.nbio.structure.jama.Matrix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +42,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.vecmath.GMatrix;
 import javax.vecmath.Matrix4d;
 
 /**
@@ -139,7 +139,7 @@ public class StructurePairAligner {
 			.getLogger(StructurePairAligner.class);
 
 	AlternativeAlignment[] alts;
-	Matrix distanceMatrix;
+	GMatrix distanceMatrix;
 	StrucAligParameters params;
 	FragmentPair[] fragPairs;
 
@@ -150,7 +150,7 @@ public class StructurePairAligner {
 		params = StrucAligParameters.getDefaultParameters();
 		reset();
 		alts = new AlternativeAlignment[0];
-		distanceMatrix = new Matrix(0, 0);
+		distanceMatrix = new GMatrix(0, 0);
 	}
 
 	public void addProgressListener(AlignmentProgressListener li) {
@@ -237,7 +237,7 @@ public class StructurePairAligner {
 
 	private void reset() {
 		alts = new AlternativeAlignment[0];
-		distanceMatrix = new Matrix(0, 0);
+		distanceMatrix = new GMatrix(0, 0);
 		fragPairs = new FragmentPair[0];
 
 	}
@@ -272,7 +272,7 @@ public class StructurePairAligner {
 	 *
 	 * @return a Matrix
 	 */
-	public Matrix getDistMat() {
+	public GMatrix getDistMat() {
 		return distanceMatrix;
 	}
 
@@ -448,7 +448,7 @@ public class StructurePairAligner {
 		}
 		int rows = ca1.length - fragmentLength + 1;
 		int cols = ca2.length - fragmentLength + 1;
-		distanceMatrix = new Matrix(rows, cols, 0.0);
+		distanceMatrix = new GMatrix(rows, cols);
 
 		double[] dist1 = AlignTools.getDiagonalAtK(ca1, k);
 
@@ -480,7 +480,7 @@ public class StructurePairAligner {
 					rdd2 = AlignTools.rms_dk_diag(dist3, dist4, i, j,
 							fragmentLength, k2);
 				double rdd = rdd1 + rdd2;
-				distanceMatrix.set(i, j, rdd);
+				distanceMatrix.setElement(i, j, rdd);
 
 				if (rdd < params.getFragmentMiniDistance()) {
 					FragmentPair f = new FragmentPair(fragmentLength, i, j);
@@ -496,11 +496,10 @@ public class StructurePairAligner {
 							Calc.atomsToPoints(catmp1),
 							Calc.atomsToPoints(catmp2));
 					
-					Matrix rotmat = Matrices.getRotationJAMA(t);
-					f.setRot(rotmat);
+					f.setTransform(t);
 
 					Atom aunitv = (Atom) unitvector.clone();
-					Calc.rotate(aunitv, rotmat);
+					Calc.rotate(aunitv, Matrices.getRotationMatrix(t));
 					f.setUnitv(aunitv);
 
 					boolean doNotAdd = false;
