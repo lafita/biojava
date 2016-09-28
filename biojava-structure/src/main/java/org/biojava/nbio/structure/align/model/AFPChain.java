@@ -30,8 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.vecmath.GMatrix;
-import javax.vecmath.Matrix3d;
-import javax.vecmath.Vector3d;
+import javax.vecmath.Matrix4d;
 
 /**
  * A bean to contain the output of a structure alignment.
@@ -95,8 +94,8 @@ public class AFPChain implements Serializable, Cloneable {
 	private int[]     blockGap;      //the gaps in each block
 	private int[]     blockResSize;  //the number of residues involved in a block
 	private int[][][]     blockResList;//the list of AFP for each block
-	private Matrix3d[] blockRotationMatrix;
-	private Vector3d[]   blockShiftVector;
+	
+	private Matrix4d[] blockTransformation;
 
 	private int     focusResn;      //the size of the set
 	private int[]     focusRes1;     //the residues from protein 1
@@ -217,8 +216,7 @@ public class AFPChain implements Serializable, Cloneable {
 		this.blockGap = o.blockGap == null ? null : o.blockGap.clone();
 		this.blockResSize = o.blockResSize == null ? null : o.blockResSize.clone();
 		this.blockResList = o.blockResList == null ? null : o.blockResList.clone();
-		this.blockRotationMatrix = o.blockRotationMatrix == null ? null : o.blockRotationMatrix.clone();
-		this.blockShiftVector = o.blockShiftVector == null ? null : o.blockShiftVector.clone();
+		this.blockTransformation = o.blockTransformation == null ? null : o.blockTransformation.clone();
 		this.focusResn = o.focusResn;
 		this.focusRes1 = o.focusRes1 == null ? null : o.focusRes1.clone();
 		this.focusRes2 = o.focusRes2 == null ? null : o.focusRes2.clone();
@@ -1271,25 +1269,15 @@ public class AFPChain implements Serializable, Cloneable {
 	{
 		this.normAlignScore = normAlignScore;
 	}
-
-	public Matrix3d[] getBlockRotationMatrix()
+	
+	public Matrix4d[] getBlockTransformation()
 	{
-		return blockRotationMatrix;
+		return blockTransformation;
 	}
 
-	public void setBlockRotationMatrix(Matrix3d[] blockRotationMatrix)
+	public void setBlockTransformation(Matrix4d[] blockTransformation)
 	{
-		this.blockRotationMatrix = blockRotationMatrix;
-	}
-
-	public Vector3d[] getBlockShiftVector()
-	{
-		return blockShiftVector;
-	}
-
-	public void setBlockShiftVector(Vector3d[] blockShiftVector)
-	{
-		this.blockShiftVector = blockShiftVector;
+		this.blockTransformation = blockTransformation;
 	}
 
 	public String getAlgorithmName() {

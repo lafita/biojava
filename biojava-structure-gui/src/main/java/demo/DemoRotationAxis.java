@@ -29,7 +29,6 @@ import org.biojava.nbio.structure.align.gui.jmol.StructureAlignmentJmol;
 import org.biojava.nbio.structure.align.model.AFPChain;
 import org.biojava.nbio.structure.align.util.AtomCache;
 import org.biojava.nbio.structure.align.util.RotationAxis;
-import org.biojava.nbio.structure.jama.Matrix;
 
 import java.io.IOException;
 
