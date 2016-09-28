@@ -22,7 +22,6 @@ import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.align.ce.CeMain;
 import org.biojava.nbio.structure.align.ce.CeSideChainMain;
 import org.biojava.nbio.structure.align.util.AFPAlignmentDisplay;
-import org.biojava.nbio.structure.jama.Matrix;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -30,9 +29,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import javax.vecmath.GMatrix;
+import javax.vecmath.Matrix3d;
+import javax.vecmath.Vector3d;
+
 /**
- * A bean to contain the core of a structure alignment.
- * The FatCat aligner class is working on the AFPChain class.
+ * A bean to contain the output of a structure alignment.
  *
  * @author Andreas Prlic
  * @author Aleix Lafita
@@ -70,8 +72,8 @@ public class AFPChain implements Serializable, Cloneable {
 	private int[][] afpAftIndex;
 	private int[][] afpBefIndex;
 
-	private Matrix disTable1;
-	private Matrix disTable2;
+	private GMatrix disTable1;
+	private GMatrix disTable2;
 
 	private int[] twi = null ; //the number of twists making the best score ending at each AFP
 
@@ -93,8 +95,8 @@ public class AFPChain implements Serializable, Cloneable {
 	private int[]     blockGap;      //the gaps in each block
 	private int[]     blockResSize;  //the number of residues involved in a block
 	private int[][][]     blockResList;//the list of AFP for each block
-	private Matrix[] blockRotationMatrix;
-	private Atom[]   blockShiftVector;
+	private Matrix3d[] blockRotationMatrix;
+	private Vector3d[]   blockShiftVector;
 
 	private int     focusResn;      //the size of the set
 	private int[]     focusRes1;     //the residues from protein 1
@@ -147,7 +149,7 @@ public class AFPChain implements Serializable, Cloneable {
 	private boolean sequentialAlignment;
 
 	// background distances
-	private Matrix distanceMatrix;
+	private GMatrix distanceMatrix;
 
 	private String description2;
 
@@ -193,8 +195,8 @@ public class AFPChain implements Serializable, Cloneable {
 		this.afpIndex = o.afpIndex == null? null: o.afpIndex.clone();
 		this.afpAftIndex = o.afpAftIndex == null? null: o.afpAftIndex.clone();
 		this.afpBefIndex = o.afpBefIndex == null? null: o.afpBefIndex.clone();
-		this.disTable1 = o.disTable1 == null? null: (Matrix) o.disTable1.clone();
-		this.disTable2 = o.disTable2 == null? null: (Matrix) o.disTable2.clone();
+		this.disTable1 = o.disTable1 == null? null: (GMatrix) o.disTable1.clone();
+		this.disTable2 = o.disTable2 == null? null: (GMatrix) o.disTable2.clone();
 		this.twi = o.twi == null ? null : o.twi.clone();
 		this.afpChainLen = o.afpChainLen;
 		this.afpChainList = o.afpChainList == null? null: o.afpChainList.clone();
@@ -665,23 +667,23 @@ public class AFPChain implements Serializable, Cloneable {
 	}
 
 
-	public Matrix getDisTable1()
+	public GMatrix getDisTable1()
 	{
 		return disTable1;
 	}
 
-	public void setDisTable1(Matrix disTable1)
+	public void setDisTable1(GMatrix disTable1)
 	{
 		this.disTable1 = disTable1;
 	}
 
 
-	public Matrix getDisTable2()
+	public GMatrix getDisTable2()
 	{
 		return disTable2;
 	}
 
-	public void setDisTable2(Matrix disTable2)
+	public void setDisTable2(GMatrix disTable2)
 	{
 		this.disTable2 = disTable2;
 	}
@@ -1270,22 +1272,22 @@ public class AFPChain implements Serializable, Cloneable {
 		this.normAlignScore = normAlignScore;
 	}
 
-	public Matrix[] getBlockRotationMatrix()
+	public Matrix3d[] getBlockRotationMatrix()
 	{
 		return blockRotationMatrix;
 	}
 
-	public void setBlockRotationMatrix(Matrix[] blockRotationMatrix)
+	public void setBlockRotationMatrix(Matrix3d[] blockRotationMatrix)
 	{
 		this.blockRotationMatrix = blockRotationMatrix;
 	}
 
-	public Atom[] getBlockShiftVector()
+	public Vector3d[] getBlockShiftVector()
 	{
 		return blockShiftVector;
 	}
 
-	public void setBlockShiftVector(Atom[] blockShiftVector)
+	public void setBlockShiftVector(Vector3d[] blockShiftVector)
 	{
 		this.blockShiftVector = blockShiftVector;
 	}
@@ -1346,7 +1348,7 @@ public class AFPChain implements Serializable, Cloneable {
 	 *
 	 * @return A matrix with dimensions ca1length x ca2length, or null
 	 */
-	public Matrix getDistanceMatrix() {
+	public GMatrix getDistanceMatrix() {
 		return distanceMatrix;
 	}
 
@@ -1356,7 +1358,7 @@ public class AFPChain implements Serializable, Cloneable {
 	 * up to the alignment algorithm.
 	 * @param distanceMatrix A matrix with dimensions ca1length x ca2length
 	 */
-	public void setDistanceMatrix(Matrix distanceMatrix) {
+	public void setDistanceMatrix(GMatrix distanceMatrix) {
 		this.distanceMatrix = distanceMatrix;
 
 		//System.out.println("Setting distMatrix "+(distanceMatrix==null?"null":"not null"));
