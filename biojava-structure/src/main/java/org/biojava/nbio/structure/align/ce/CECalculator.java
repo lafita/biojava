@@ -34,6 +34,7 @@ import org.biojava.nbio.structure.StructureTools;
 import org.biojava.nbio.structure.align.model.AFP;
 import org.biojava.nbio.structure.align.model.AFPChain;
 import org.biojava.nbio.structure.align.util.AFPAlignmentDisplay;
+import org.biojava.nbio.structure.geometry.Matrices;
 import org.biojava.nbio.structure.geometry.SuperPositions;
 import org.biojava.nbio.core.sequence.compound.AminoAcidCompound;
 import org.biojava.nbio.core.sequence.compound.AminoAcidCompoundSet;
@@ -2142,21 +2143,13 @@ nBestTrace=nTrace;
 		 //System.out.println("dist1 :" + dist1.length + " " + dist2.length);
 
 		 if ( nse1 > 0 && dist1.length > 0 ) {
-			 GMatrix mat = new GMatrix(nse1, nse1);
-			 for (int c = 0; c < nse1; c++) {
-				 mat.setRow(c, dist1[c]);
-			 }
-			 afpChain.setDisTable1(mat);
+			 afpChain.setDisTable1(Matrices.doubleToVecmath(dist1));
 		 } else {
 			 GMatrix mat = new GMatrix(3, 3);
 			 mat.setIdentity();
 			 afpChain.setDisTable2(mat);
 		 } if ( nse2 > 0 && dist2.length > 0 ) {
-			 GMatrix mat = new GMatrix(nse2, nse2);
-			 for (int c = 0; c < nse2; c++) {
-				 mat.setRow(c, dist2[c]);
-			 }
-			 afpChain.setDisTable1(mat);
+			 afpChain.setDisTable2(Matrices.doubleToVecmath(dist2));
 		 } else {
 			 GMatrix mat = new GMatrix(3, 3);
 			 mat.setIdentity();
