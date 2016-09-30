@@ -24,13 +24,13 @@ import org.biojava.nbio.structure.align.ce.GuiWrapper;
 import org.biojava.nbio.structure.align.model.AFPChain;
 import org.biojava.nbio.structure.geometry.Matrices;
 import org.biojava.nbio.structure.geometry.SuperPositions;
-import org.biojava.nbio.structure.jama.Matrix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
+import javax.vecmath.Matrix3d;
 import javax.vecmath.Matrix4d;
 
 
@@ -64,7 +64,7 @@ public class AFPAlignmentDisplay
 
 	private static final List<Character> aa1List = Arrays.asList(aa1);
 
-	public static Matrix getRotMax(AFPChain afpChain,Atom[] ca1,Atom[] ca2) throws StructureException{
+	public static Matrix3d getRotMax(AFPChain afpChain,Atom[] ca1,Atom[] ca2) throws StructureException{
 
 		Atom[] a1 = getAlignedAtoms1(afpChain,ca1);
 		Atom[] a2 = getAlignedAtoms2(afpChain,ca2);
@@ -72,7 +72,7 @@ public class AFPAlignmentDisplay
 		Matrix4d trans = SuperPositions.superpose(Calc.atomsToPoints(a1), 
 				Calc.atomsToPoints(a2));
 		
-		return Matrices.getRotationJAMA(trans);
+		return Matrices.getRotationMatrix(trans);
 
 	}
 

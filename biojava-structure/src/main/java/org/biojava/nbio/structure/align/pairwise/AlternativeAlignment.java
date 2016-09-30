@@ -22,13 +22,11 @@
  */
 package org.biojava.nbio.structure.align.pairwise;
 
-
 import org.biojava.nbio.structure.*;
 import org.biojava.nbio.structure.align.StrucAligParameters;
 import org.biojava.nbio.structure.align.helper.AligMatEl;
 import org.biojava.nbio.structure.align.helper.IndexPair;
 import org.biojava.nbio.structure.align.helper.JointFragments;
-import org.biojava.nbio.structure.geometry.Matrices;
 import org.biojava.nbio.structure.geometry.SuperPositions;
 
 import java.io.Serializable;
@@ -648,8 +646,8 @@ public class AlternativeAlignment implements Serializable{
 			Chain c1 = p1.getChain();
 			Chain c2 = p2.getChain();
 
-			String cid1 = c1.getChainID();
-			String cid2 = c2.getChainID();
+			String cid1 = c1.getId();
+			String cid2 = c2.getId();
 
 			String pdb1 = p1.getResidueNumber().toString();
 			String pdb2 = p2.getResidueNumber().toString();

@@ -31,6 +31,7 @@ import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JTextField;
+import javax.vecmath.GMatrix;
 
 import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.Chain;
@@ -38,7 +39,6 @@ import org.biojava.nbio.structure.ChainImpl;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureImpl;
 import org.biojava.nbio.structure.align.util.ResourceManager;
-import org.biojava.nbio.structure.jama.Matrix;
 import org.jcolorbrewer.ColorBrewer;
 import org.jmol.api.JmolViewer;
 import org.jmol.viewer.Viewer;
@@ -192,7 +192,7 @@ implements MouseMotionListener, MouseListener, WindowListener, ActionListener {
 	 * one for each structure in the alignment.
 	 * Returns null if no alignment is being displayed.
 	 */
-	public abstract List<Matrix> getDistanceMatrices();
+	public abstract List<GMatrix> getDistanceMatrices();
 
 	/**
 	 * Set the title of the AlignmentJmol window.

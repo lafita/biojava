@@ -31,11 +31,12 @@ import org.biojava.nbio.structure.align.pairwise.FragmentPair;
 import org.biojava.nbio.structure.gui.util.color.*;
 import org.biojava.nbio.structure.gui.util.color.LinearColorInterpolator.InterpolationDirection;
 import org.biojava.nbio.structure.io.PDBFileReader;
-import org.biojava.nbio.structure.jama.Matrix;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.vecmath.GMatrix;
+
 import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.event.ActionEvent;
@@ -315,11 +316,11 @@ implements ChangeListener, ActionListener {
 		scroll.updateUI();
 	}
 
-	public Matrix getMatrix() {
+	public GMatrix getMatrix() {
 		return mPanel.getMatrix();
 	}
 
-	public void setMatrix(Matrix matrix) {
+	public void setMatrix(GMatrix matrix) {
 		mPanel.setMatrix(matrix);
 
 

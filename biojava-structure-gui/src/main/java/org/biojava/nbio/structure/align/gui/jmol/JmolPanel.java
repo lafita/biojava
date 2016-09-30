@@ -39,6 +39,7 @@ import java.text.DecimalFormat;
 import java.util.List;
 
 import javax.swing.JComboBox;
+import javax.vecmath.Matrix3d;
 
 import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.Calc;
@@ -51,7 +52,6 @@ import org.biojava.nbio.structure.domain.pdp.Domain;
 import org.biojava.nbio.structure.domain.pdp.Segment;
 import org.biojava.nbio.structure.gui.util.color.ColorUtils;
 import org.biojava.nbio.structure.io.mmtf.MmtfActions;
-import org.biojava.nbio.structure.jama.Matrix;
 import org.biojava.nbio.structure.scop.ScopDatabase;
 import org.biojava.nbio.structure.scop.ScopDomain;
 import org.biojava.nbio.structure.scop.ScopInstallation;
@@ -362,7 +362,7 @@ implements ActionListener
 		}
 	}
 
-	public void rotateJmol(Matrix jmolRotation) {
+	public void rotateJmol(Matrix3d jmolRotation) {
 
 		if ( jmolRotation != null) {
 			double[] zyz = Calc.getZYZEuler(jmolRotation);

@@ -32,6 +32,8 @@ import org.biojava.nbio.structure.align.util.RotationAxis;
 
 import java.io.IOException;
 
+import javax.vecmath.Matrix4d;
+
 /**
  * A demo for how to use {@link RotationAxis} to display the rotation for an
  * alignment. This is particularly useful for symmetric alignments, eg between
@@ -65,9 +67,8 @@ public final class DemoRotationAxis {
 			AFPChain afpChain = ce.align(ca1, ca2);
 
 			// Calculate the axis of rotation
-			Matrix mat = afpChain.getBlockRotationMatrix()[0];
-			Atom shift = afpChain.getBlockShiftVector()[0];
-			RotationAxis axis = new RotationAxis(mat,shift);
+			Matrix4d transform = afpChain.getBlockTransformation()[0];
+			RotationAxis axis = new RotationAxis(transform);
 
 			// Print the angle of rotation
 			double theta = Math.toDegrees(axis.getAngle());

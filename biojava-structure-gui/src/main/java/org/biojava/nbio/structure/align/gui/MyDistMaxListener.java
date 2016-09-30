@@ -21,9 +21,9 @@ package org.biojava.nbio.structure.align.gui;
 
 import org.biojava.nbio.structure.align.gui.jmol.AbstractAlignmentJmol;
 import org.biojava.nbio.structure.gui.ScaleableMatrixPanel;
-import org.biojava.nbio.structure.jama.Matrix;
 
 import javax.swing.*;
+import javax.vecmath.GMatrix;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -52,11 +52,12 @@ public class MyDistMaxListener implements ActionListener{
 		}
 		for (int i=0; i<parent.getDistanceMatrices().size(); i++){
 			if (parent.getDistanceMatrices().get(i)!=null)
-				showMatrix(parent.getDistanceMatrices().get(i), "Internal Distances for Structure "+(i+1));
+				showMatrix(parent.getDistanceMatrices().get(i), 
+						"Internal Distances for Structure "+(i+1));
 		}
 	}
 
-	private void showMatrix(Matrix m, String title){
+	private void showMatrix(GMatrix m, String title){
 		ScaleableMatrixPanel smp = new ScaleableMatrixPanel();
 		JFrame frame = new JFrame(title);
 		frame.addWindowListener(new WindowAdapter(){

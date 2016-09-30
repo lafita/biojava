@@ -29,7 +29,6 @@ import org.biojava.nbio.structure.gui.BiojavaJmol;
 import org.biojava.nbio.structure.gui.ScaleableMatrixPanel;
 import org.biojava.nbio.structure.gui.SequenceDisplay;
 import org.biojava.nbio.structure.gui.events.JmolAlignedPositionListener;
-import org.biojava.nbio.structure.jama.Matrix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,14 +43,15 @@ import java.text.MessageFormat;
 import java.util.List;
 
 
-/** a frame showing the alternative alignments, which are the result of a structure superimposition
+/**
+ * A frame showing the alternative alignments, which are the result of a
+ * structure superimposition
  *
  * @author Andreas Prlic
  * @since 1.7
  * @version %I% %G%
  */
-public class AlternativeAlignmentFrame
-extends JFrame{
+public class AlternativeAlignmentFrame extends JFrame {
 
 	private static final long serialVersionUID=0l;
 
@@ -188,24 +188,12 @@ extends JFrame{
 		AlternativeAlignment alig = aligs[position];
 		logger.info("display alternative alignment " + (position +1));
 
-		// create the structure alignment object and tell the listeners ...
-
-
-//		Matrix m1 = Matrix.identity(3,3);
-		Matrix m2 = alig.getRotationMatrix();
-
 		String pdb1 = structure1.getPDBCode();
 		String pdb2 = structure2.getPDBCode();
 
-
-		Atom shift1 = new AtomImpl();
-		shift1.setCoords(new double[]{0,0,1});
-		Atom shift2 = alig.getShift();
-
 		Structure s3 = structure2.clone();
 
-		Calc.rotate(s3,m2);
-		Calc.shift(s3,shift2);
+		Calc.transform(s3, alig.getTransformation());
 
 		BiojavaJmol jmol = new BiojavaJmol();
 		jmol.setTitle(pdb1 + " vs. " + pdb2);

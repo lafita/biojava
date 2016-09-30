@@ -35,7 +35,6 @@ import org.biojava.nbio.structure.align.util.ResourceManager;
 import org.biojava.nbio.structure.align.util.UserConfiguration;
 import org.biojava.nbio.structure.align.webstart.AligUIManager;
 import org.biojava.nbio.structure.gui.util.color.ColorUtils;
-import org.biojava.nbio.structure.jama.Matrix;
 
 import javax.swing.*;
 

@@ -31,9 +31,10 @@ import org.biojava.nbio.structure.align.model.AFPChain;
 import org.biojava.nbio.structure.align.pairwise.AlternativeAlignment;
 import org.biojava.nbio.structure.align.util.AtomCache;
 import org.biojava.nbio.structure.gui.ScaleableMatrixPanel;
-import org.biojava.nbio.structure.jama.Matrix;
 
 import javax.swing.*;
+import javax.vecmath.GMatrix;
+
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
@@ -126,13 +127,13 @@ public class DotPlotPanel extends ScaleableMatrixPanel {
 		this.setAlternativeAligs(aligns);
 		this.setSelectedAlignmentPos(0); //color white, not red
 
-		Matrix background = alignment.getDistanceMatrix();
+		GMatrix background = alignment.getDistanceMatrix();
 		//Fill with default black background if none given
 		if(background == null) {
-			background = new Matrix(alignment.getCa1Length(),alignment.getCa2Length());
-			for(int i=0;i<background.getRowDimension();i++)
-				for(int j=0;j<background.getColumnDimension(); j++) {
-					background.set(i, j, defaultBackground);
+			background = new GMatrix(alignment.getCa1Length(),alignment.getCa2Length());
+			for(int i=0;i<background.getNumRow();i++)
+				for(int j=0;j<background.getNumCol(); j++) {
+					background.setElement(i, j, defaultBackground);
 				}
 		}
 

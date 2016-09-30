@@ -43,12 +43,11 @@ import javax.swing.JLabel;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.vecmath.GMatrix;
 
 import org.biojava.nbio.structure.Atom;
-import org.biojava.nbio.structure.PDBHeader;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
-import org.biojava.nbio.structure.StructureIdentifier;
 import org.biojava.nbio.structure.align.gui.MenuCreator;
 import org.biojava.nbio.structure.align.gui.MultipleAlignmentGUI;
 import org.biojava.nbio.structure.align.gui.MultipleAlignmentJmolDisplay;
@@ -59,7 +58,6 @@ import org.biojava.nbio.structure.align.multiple.util.MultipleAlignmentTools;
 import org.biojava.nbio.structure.align.multiple.util.MultipleAlignmentWriter;
 import org.biojava.nbio.structure.align.webstart.AligUIManager;
 import org.biojava.nbio.structure.gui.WrapLayout;
-import org.biojava.nbio.structure.jama.Matrix;
 import org.forester.archaeopteryx.Archaeopteryx;
 import org.forester.phylogeny.Phylogeny;
 import org.jcolorbrewer.ColorBrewer;
@@ -550,7 +548,7 @@ public class MultipleAlignmentJmol extends AbstractAlignmentJmol {
 	}
 
 	@Override
-	public List<Matrix> getDistanceMatrices() {
+	public List<GMatrix> getDistanceMatrices() {
 		if (multAln == null)
 			return null;
 		else

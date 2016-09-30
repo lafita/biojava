@@ -1,6 +1,7 @@
 package org.biojava.nbio.structure.geometry;
 
 import javax.vecmath.GMatrix;
+import javax.vecmath.GVector;
 import javax.vecmath.Matrix3d;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Vector3d;
@@ -186,10 +187,11 @@ public class Matrices {
 
 		for (int i = 0; i < r.length; i++) {
 			for (int j = 0; j < c.length; j++) {
-				X.setElement(i,j,A.getElement(r[i],c[j]));
+				X.setElement(i, j, A.getElement(r[i], c[j]));
 			}
 		}
 
 		return X;
 	}
+
 }

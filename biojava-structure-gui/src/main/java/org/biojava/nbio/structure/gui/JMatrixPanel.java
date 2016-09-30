@@ -28,9 +28,10 @@ import org.biojava.nbio.structure.align.pairwise.AlternativeAlignment;
 import org.biojava.nbio.structure.align.pairwise.FragmentPair;
 import org.biojava.nbio.structure.gui.util.color.ContinuousColorMapper;
 import org.biojava.nbio.structure.gui.util.color.DefaultMatrixMapper;
-import org.biojava.nbio.structure.jama.Matrix;
 
 import javax.swing.*;
+import javax.vecmath.GMatrix;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.lang.reflect.Method;
@@ -40,8 +41,8 @@ import java.lang.reflect.Method;
  * taken for the alignment
  *
  * <p>Note: This panel displays the transpose of its underlying matrix.
- * Thus its width will be the same as {@link Matrix#getRowDimension()} and its
- * height the same as {@link Matrix#getColumnDimension()}. This stems from the
+ * Thus its width will be the same as {@link Matrix#getNumRow()} and its
+ * height the same as {@link Matrix#getNumCol()}. This stems from the
  * unfortunate ordering of {@link Matrix#get(int, int)} parameters as (row, col),
  * which is opposite from the normal (x,y) order used when displaying graphics.
  *
@@ -55,7 +56,7 @@ public class JMatrixPanel extends JPanel{
 	 */
 	private static final long serialVersionUID = -1720879395453257846L;
 	BufferedImage _bufImage;
-	Matrix matrix;
+	GMatrix matrix;
 	ContinuousColorMapper cellColor; //Maps matrix elements to a color
 	float scale;
 
@@ -72,7 +73,7 @@ public class JMatrixPanel extends JPanel{
 		//saturation = 0.9f;
 		//scalevalue = 10;
 		selectedAlignmentPos = -1;
-		matrix = new Matrix(0,0);
+		matrix = new GMatrix(0,0);
 		params = new StrucAligParameters();
 	}
 
@@ -108,8 +109,8 @@ public class JMatrixPanel extends JPanel{
 
 	public void setPreferredSize(){
 
-		int prefW = Math.round(matrix.getRowDimension() * scale);
-		int prefH = Math.round(matrix.getColumnDimension() * scale);
+		int prefW = Math.round(matrix.getNumRow() * scale);
+		int prefH = Math.round(matrix.getNumCol() * scale);
 
 		this.setPreferredSize(new Dimension(prefW,prefH));
 
@@ -129,7 +130,7 @@ public class JMatrixPanel extends JPanel{
 
 	}
 
-	public Matrix getMatrix() {
+	public GMatrix getMatrix() {
 		return matrix;
 	}
 
@@ -137,7 +138,7 @@ public class JMatrixPanel extends JPanel{
 	 *
 	 * @param matrix
 	 */
-	public void setMatrix(Matrix matrix) {
+	public void setMatrix(GMatrix matrix) {
 		this.matrix = matrix;
 		setPreferredSize();
 	}
@@ -272,8 +273,8 @@ public class JMatrixPanel extends JPanel{
 	public void drawDistances(Graphics g1){
 		Graphics2D g = (Graphics2D)g1;
 
-		int c = matrix.getRowDimension();
-		int d = matrix.getColumnDimension();
+		int c = matrix.getNumRow();
+		int d = matrix.getNumCol();
 
 		float scale = getScale();
 		int width = Math.round(scale);
@@ -282,7 +283,7 @@ public class JMatrixPanel extends JPanel{
 			int ipaint = Math.round(i*scale);
 
 			for (int j = 0; j < d; j++) {
-				double val = matrix.get(i,j);
+				double val = matrix.getElement(i,j);
 
 				int jpaint = Math.round(j*scale);
 

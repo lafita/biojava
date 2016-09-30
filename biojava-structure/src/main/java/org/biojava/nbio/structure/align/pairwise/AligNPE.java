@@ -22,16 +22,12 @@
  */
 package org.biojava.nbio.structure.align.pairwise;
 
+import javax.vecmath.GMatrix;
+
 import org.biojava.nbio.structure.align.StrucAligParameters;
 import org.biojava.nbio.structure.align.helper.AligMatEl;
-import org.biojava.nbio.structure.jama.Matrix;
 
 public class AligNPE {
-
-	public AligNPE() {
-		super();
-
-	}
 
 	/**
 	 * Align without penalizing end-gaps. Return alignment and score
@@ -40,14 +36,14 @@ public class AligNPE {
 	 * @param params the structure alignment parameters to be used
 	 * @return an Alignable
 	 */
-	public static Alignable align_NPE(Matrix sim,StrucAligParameters params){
+	public static Alignable align_NPE(GMatrix sim, StrucAligParameters params){
 		//System.out.println("align_NPE");
 
 		float gapOpen = params.getGapOpen();
 		float gapExtension = params.getGapExtension();
 
-		int rows = sim.getRowDimension();
-		int cols = sim.getColumnDimension();
+		int rows = sim.getNumRow();
+		int cols = sim.getNumCol();
 
 		Alignable al = new StrCompAlignment(rows,cols);
 		al.setGapExtCol(gapExtension);
@@ -66,7 +62,7 @@ public class AligNPE {
 				//        ( j < cols)) {
 					//TODO: the ALIGFACTOR calc should be hidden in Gotoh!!
 
-				e = (int)Math.round(Gotoh.ALIGFACTOR * sim.get(i,j));
+				e = (int)Math.round(Gotoh.ALIGFACTOR * sim.getElement(i,j));
 				//}
 				//System.out.println(e);
 				AligMatEl am = new AligMatEl();
