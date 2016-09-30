@@ -95,7 +95,8 @@ public class Matrices {
 	/**
 	 * Convert a JAMA Matrix to a vecmath GMatrix.
 	 * 
-	 * @param jama JAMA Matrix
+	 * @param jama
+	 *            JAMA Matrix
 	 * @return copy of the matrix as GMatrix
 	 */
 	public static GMatrix jamaToVecmath(Matrix jama) {
@@ -105,21 +106,49 @@ public class Matrices {
 	/**
 	 * Convert a double[][] matrix to a vecmath GMatrix.
 	 * 
-	 * @param matrix double[][] matrix
+	 * @param matrix
+	 *            double[][] matrix
 	 * @return copy of the matrix as GMatrix
 	 */
 	public static GMatrix doubleToVecmath(double[][] matrix) {
-		
+
 		// Empty matrix case
-		if (matrix.length == 0){
+		if (matrix.length == 0) {
 			return new GMatrix(0, 0);
 		}
-		
+
 		GMatrix mat = new GMatrix(matrix.length, matrix[0].length);
 		for (int r = 0; r < matrix.length; r++)
 			mat.setRow(r, matrix[r]);
-		
+
 		return mat;
 	}
 
+	/**
+	 * Convert a vecmath GMatrix to a JAMA matrix.
+	 * 
+	 * @param gmatrix a vecmath GMatrix
+	 * @return
+	 */
+	public static Matrix vecmathToJama(GMatrix gmatrix) {
+		return new Matrix(vecmathToDouble(gmatrix));
+	}
+
+	/**
+	 * Convert a vecmath GMatrix to a double[][] matrix.
+	 * 
+	 * @param gmatrix a vecmath GMatrix
+	 * @return
+	 */
+	public static double[][] vecmathToDouble(GMatrix gmatrix) {
+		
+		double[][] matrix = new double[gmatrix.getNumRow()][];
+		
+		for (int r = 0; r < gmatrix.getNumRow(); r++) {
+			matrix[r] = new double[gmatrix.getNumCol()];
+			gmatrix.getColumn(r, matrix[r]);
+		}
+		
+		return matrix;
+	}
 }
