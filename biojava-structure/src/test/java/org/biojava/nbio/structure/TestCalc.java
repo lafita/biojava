@@ -25,8 +25,6 @@ import static org.junit.Assert.*;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
 
-import org.biojava.nbio.structure.geometry.Matrices;
-import org.biojava.nbio.structure.jama.Matrix;
 import org.junit.Test;
 
 public class TestCalc {
@@ -102,35 +100,6 @@ public class TestCalc {
 		d = getAtom(-2,-1, 0);
 
 		assertEquals(0, Calc.torsionAngle(a, b, c, d),0.00001);
-	}
-
-	@Test
-	public void testJamaTransformation() {
-
-		Atom atom = getAtom(1.0, 1.0, 1.0);
-
-		//Identity transform
-		Matrix identR = Matrix.identity(3, 3);
-		Atom identT = getAtom(0, 0, 0);
-		Calc.rotate(atom, identR);
-		Calc.shift(atom, identT);
-
-		Point3d expected = new Point3d(1.0, 1.0, 1.0);
-		Point3d actual = atom.getCoordsAsPoint3d();
-
-		assertEquals(expected, actual);
-
-		//Sample transform: calc transposes automatically the matrix
-		//because it is a pre-multiplication rotation matrix
-		Matrix sampleR = Matrices.getRotationJAMA(getSampleTransform());
-		Atom sampleT = Calc.getTranslationVector(getSampleTransform());
-		Calc.rotate(atom, sampleR);
-		Calc.shift(atom, sampleT);
-
-		expected = new Point3d(2.0, 7.0, -1.3);
-		actual = atom.getCoordsAsPoint3d();
-
-		assertEquals(expected, actual);
 	}
 
 	@Test
