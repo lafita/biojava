@@ -30,42 +30,40 @@ import org.biojava.nbio.structure.*;
 import org.biojava.nbio.structure.align.model.AFP;
 import org.biojava.nbio.structure.align.model.AFPChain;
 import org.biojava.nbio.structure.geometry.SuperPositions;
-import org.biojava.nbio.structure.jama.Matrix;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.vecmath.Matrix4d;
 
 /** a class that performs calculations on AFPCHains
  *
  * @author Andreas Prlic
  *
  */
-public class AFPCalculator
-{
+public class AFPCalculator {
+	
 	public static final boolean debug = FatCatAligner.debug;
 
-
-	public static final  void extractAFPChains(FatCatParameters params, AFPChain afpChain,Atom[] ca1,Atom[] ca2) throws StructureException {
-
-
+	public static final void extractAFPChains(FatCatParameters params,
+			AFPChain afpChain, Atom[] ca1, Atom[] ca2)
+			throws StructureException {
 
 		List<AFP> afpSet = new ArrayList<AFP>();
 		afpChain.setAfpSet(afpSet);
 
-		if ( debug )
-			System.err.println("nr of atoms ca1: " + ca1.length + " ca2: " +  ca2.length);
+		if (debug)
+			System.err.println("nr of atoms ca1: " + ca1.length + " ca2: "
+					+ ca2.length);
 
-
-
-		int     p1, p2;
+		int p1, p2;
 		@SuppressWarnings("unused")
 		int n0, n, n1, n2;
-		double  filter1;
+		double filter1;
 		double rmsd = 0;
 
-		Matrix r = new Matrix(3,3);
-		Atom   t = new AtomImpl();
-
+		// TODO this matrix is not set, stays as Identity
+		Matrix4d tr = new Matrix4d();
 
 		int sparse = params.getSparse();
 		int maxTra = params.getMaxTra();
@@ -75,7 +73,7 @@ public class AFPCalculator
 		double badRmsd = params.getBadRmsd();
 		double fragScore = params.getFragScore();
 
-		int     add = sparse + 1; //if add > 1, use sparse sampling
+		int add = sparse + 1; // if add > 1, use sparse sampling
 		n0 = n = n1 = n2 = 0;
 
 		int minLen = 0;
@@ -83,22 +81,26 @@ public class AFPCalculator
 		int prot1Length = ca1.length;
 		int prot2Length = ca2.length;
 
-		if(prot1Length < prot2Length)
+		if (prot1Length < prot2Length)
 			minLen = prot1Length;
 		else
 			minLen = prot2Length;
 		afpChain.setMinLen(minLen);
 
-		afpChain.setBlockResList(new int[maxTra+1][2][minLen]);
+		afpChain.setBlockResList(new int[maxTra + 1][2][minLen]);
 		afpChain.setFocusRes1(new int[minLen]);
 		afpChain.setFocusRes2(new int[minLen]);
 
-		for(p1 = 0; p1 < prot1Length - fragLen; p1 += add )    {
-			for(p2 = 0; p2 < prot2Length - fragLen; p2 += add)     {
-				n0 ++;
-				filter1 = getEnd2EndDistance(ca1, ca2, p1, p1 + fragLen - 1, p2, p2 + fragLen - 1);
-				//difference bewteen end-to-end distances
-				if(filter1 > disFilter) { n1 ++; continue; }
+		for (p1 = 0; p1 < prot1Length - fragLen; p1 += add) {
+			for (p2 = 0; p2 < prot2Length - fragLen; p2 += add) {
+				n0++;
+				filter1 = getEnd2EndDistance(ca1, ca2, p1, p1 + fragLen - 1,
+						p2, p2 + fragLen - 1);
+				// difference bewteen end-to-end distances
+				if (filter1 > disFilter) {
+					n1++;
+					continue;
+				}
 				boolean filter2 = filterTerminal(ca1,ca2, p1, p1 + fragLen - 1, p2, p2 + fragLen - 1, fragLen, minLen);
 				if(filter2)     {
 					n2 ++;
@@ -111,7 +113,7 @@ public class AFPCalculator
 				// we use the BioJava SVD instead...
 
 				//
-				rmsd = getRmsd(ca1,ca2,fragLen, p1,p2,r,t);
+				rmsd = getRmsd(ca1, ca2, fragLen, p1, p2, tr);
 
 				if(rmsd < rmsdCut)      {
 					AFP     afptmp = new AFP();
@@ -119,8 +121,7 @@ public class AFPCalculator
 					afptmp.setP2(p2);
 					afptmp.setFragLen(fragLen);
 					afptmp.setRmsd(rmsd);
-					afptmp.setM(r);
-					afptmp.setT(t.getCoords());
+					afptmp.setTransform(tr);
 					afptmp.setScore(scoreAfp(afptmp,badRmsd,fragScore));
 					afpSet.add(afptmp);
 					n ++;
@@ -182,12 +183,12 @@ public class AFPCalculator
 	}
 
 	private static final double getRmsd(Atom[] ca1, Atom[] ca2, int fragLen, 
-			int p1, int p2, Matrix m, Atom t) throws StructureException {
+			int p1, int p2, Matrix4d tr) throws StructureException {
 
 
 		double rmsd = 99.9;
-		Atom[] catmp1 = getFragment(ca1, p1, fragLen,false);
-		Atom[] catmp2 = getFragment(ca2, p2, fragLen,false);
+		Atom[] catmp1 = getFragment(ca1, p1, fragLen, false);
+		Atom[] catmp2 = getFragment(ca2, p2, fragLen, true);
 
 		if ( catmp1 == null) {
 			System.err.println("could not get fragment for ca1 " + p1 + " " + fragLen );
@@ -199,8 +200,10 @@ public class AFPCalculator
 			return rmsd;
 		}
 
-		return SuperPositions.getRmsd(Calc.atomsToPoints(catmp1), 
+		tr = SuperPositions.superposeAndTransform(Calc.atomsToPoints(catmp1), 
 				Calc.atomsToPoints(catmp2));
+		
+		return Calc.rmsd(catmp1, catmp2);
 	}
 
 	/** get a continue subset of Atoms based by the starting position and the length

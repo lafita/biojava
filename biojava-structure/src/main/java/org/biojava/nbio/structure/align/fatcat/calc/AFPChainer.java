@@ -33,13 +33,14 @@ import org.biojava.nbio.structure.align.AFPTwister;
 import org.biojava.nbio.structure.align.model.AFP;
 import org.biojava.nbio.structure.align.model.AFPChain;
 import org.biojava.nbio.structure.geometry.SuperPositions;
-import org.biojava.nbio.structure.jama.Matrix;
 
 import java.util.List;
 
+import javax.vecmath.GMatrix;
 import javax.vecmath.Matrix4d;
 
-/** a class to chain AFPs to an alignment
+/** 
+ * A class to chain AFPs to an alignment
  *
  * @author Andreas Prlic
  *
@@ -112,8 +113,8 @@ public class AFPChainer
 		int maxTra = params.getMaxTra();
 
 
-		Matrix disTable1 = getDisTable(maxGap + 2 * fragLen + 1,ca1);
-		Matrix disTable2 = getDisTable(maxGap + 2 * fragLen + 1,ca2);
+		GMatrix disTable1 = getDisTable(maxGap + 2 * fragLen + 1,ca1);
+		GMatrix disTable2 = getDisTable(maxGap + 2 * fragLen + 1,ca2);
 
 		afpChain.setDisTable1(disTable1);
 		afpChain.setDisTable2(disTable2);
@@ -164,24 +165,24 @@ public class AFPChainer
 
 	}
 
-	private static Matrix getDisTable(int maxlen, Atom[]ca)
+	private static GMatrix getDisTable(int maxlen, Atom[] ca) {
 
-	{
 		int length = ca.length;
-		Matrix dis = new Matrix(length,length);
+		GMatrix dis = new GMatrix(length, length);
 
-		int     i, j;
-		for(i = 0; i < length; i ++)    {
-			dis.set(i,i,0);
-			for(j = i + 1;( j < length) && (j <= i + maxlen); j ++)     {
-				dis.set(i,j,0);
+		int i, j;
+		for (i = 0; i < length; i++) {
+			dis.setElement(i, i, 0);
+			for (j = i + 1; (j < length) && (j <= i + maxlen); j++) {
+				dis.setElement(i, j, 0);
 
-				double val = dis.get(i,j) + (Calc.getDistance(ca[i],ca[j])) * (Calc.getDistance(ca[i],ca[j]));
-				dis.set(i,j,val);
+				double val = dis.getElement(i, j)
+						+ (Calc.getDistance(ca[i], ca[j]))
+						* (Calc.getDistance(ca[i], ca[j]));
+				dis.setElement(i, j, val);
 
-
-				dis.set(i,j,Math.sqrt(dis.get(i,j)));
-				dis.set(j,i,dis.get(i,j));
+				dis.setElement(i, j, Math.sqrt(dis.getElement(i, j)));
+				dis.setElement(j, i, dis.getElement(i, j));
 			}
 		}
 		return dis;
@@ -403,13 +404,13 @@ public class AFPChainer
 	 * @param afp2
 	 * @return
 	 */
-	private static double calAfpDis(int afp1, int afp2, FatCatParameters params, AFPChain afpChain)
-	{
+	private static double calAfpDis(int afp1, int afp2, 
+			FatCatParameters params, AFPChain afpChain) {
 
 		List<AFP> afpSet = afpChain.getAfpSet();
 
-		Matrix disTable1 = afpChain.getDisTable1();
-		Matrix disTable2 = afpChain.getDisTable2();
+		GMatrix disTable1 = afpChain.getDisTable1();
+		GMatrix disTable2 = afpChain.getDisTable2();
 
 		int fragLen = params.getFragLen();
 		double afpDisCut = params.getAfpDisCut();
@@ -425,7 +426,7 @@ public class AFPChainer
 			for(j = 0; j < fragLen; j ++)   {
 				aj = afpSet.get(afp2).getP1() + j;
 				bj = afpSet.get(afp2).getP2() + j;
-				d = disTable1.get(aj,ai) - disTable2.get(bj,bi);
+				d = disTable1.getElement(aj,ai) - disTable2.getElement(bj,bi);
 				rms += d * d;
 				if(rms > afpDisCut)     { return (disCut); }
 			}

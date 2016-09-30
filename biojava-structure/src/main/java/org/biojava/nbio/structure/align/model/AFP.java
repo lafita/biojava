@@ -20,9 +20,9 @@
  */
 package org.biojava.nbio.structure.align.model;
 
-import org.biojava.nbio.structure.jama.Matrix;
-
 import java.io.Serializable;
+
+import javax.vecmath.Matrix4d;
 
 /** A class to represent a FATCAT AFP
  *
@@ -40,8 +40,7 @@ public class AFP implements Serializable {
 	int p2;
 	int fragLen;
 	double rmsd;
-	Matrix m;
-	double[] t;
+	Matrix4d tr;
 	double score;
 
 	long id;
@@ -105,17 +104,11 @@ public String toString(){
 	public void setRmsd(double rmsd) {
 		this.rmsd = rmsd;
 	}
-	public Matrix getM() {
-		return m;
+	public Matrix4d getTransform() {
+		return tr;
 	}
-	public void setM(Matrix m) {
-		this.m = m;
-	}
-	public double[] getT() {
-		return t;
-	}
-	public void setT(double[] t) {
-		this.t = t;
+	public void setTransform(Matrix4d tr) {
+		this.tr = tr;
 	}
 	public double getScore() {
 		return score;

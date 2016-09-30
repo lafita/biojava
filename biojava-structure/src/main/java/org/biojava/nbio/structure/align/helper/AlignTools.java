@@ -22,10 +22,11 @@
  */
 package org.biojava.nbio.structure.align.helper;
 
+import javax.vecmath.GMatrix;
+
 import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.AtomImpl;
 import org.biojava.nbio.structure.Calc;
-import org.biojava.nbio.structure.jama.Matrix;
 
 public class AlignTools {
 
@@ -168,12 +169,12 @@ public class AlignTools {
 	 * @param ca2
 	 * @return a Matrix
 	 */
-	public static Matrix getDistanceMatrix(Atom[] ca1, Atom[] ca2){
+	public static GMatrix getDistanceMatrix(Atom[] ca1, Atom[] ca2){
 
 		int r = ca1.length;
 		int c = ca2.length;
 
-		Matrix out = new Matrix(r,c);
+		GMatrix out = new GMatrix(r,c);
 
 		for (int i=0; i<r; i++) {
 			Atom a1 = ca1[i];
@@ -181,7 +182,7 @@ public class AlignTools {
 				Atom b1 = ca2[j];
 
 				double d = Calc.getDistance(a1,b1);
-				out.set(i,j,d);
+				out.setElement(i,j,d);
 			}
 		}
 		return out;
