@@ -161,11 +161,35 @@ public class Matrices {
 	 * @param value
 	 */
 	public static void fillGMatrix(GMatrix gmatrix, double value) {
-		
+
 		for (int r = 0; r < gmatrix.getNumRow(); r++) {
 			for (int c = 0; c < gmatrix.getNumCol(); c++) {
 				gmatrix.setElement(r, c, value);
 			}
 		}
+	}
+
+	/**
+	 * Get a matrix with permuted elements, specified by row and column indices.
+	 * 
+	 * @param A
+	 *            original matrix, will not be modified
+	 * @param r
+	 *            Array of row indices.
+	 * @param c
+	 *            Array of column indices.
+	 * @return A(r(:),c(:)) a new GMatrix object
+	 */
+	public static GMatrix getPermutatedMatrix(GMatrix A, int[] r, int[] c) {
+
+		GMatrix X = new GMatrix(r.length, c.length);
+
+		for (int i = 0; i < r.length; i++) {
+			for (int j = 0; j < c.length; j++) {
+				X.setElement(i,j,A.getElement(r[i],c[j]));
+			}
+		}
+
+		return X;
 	}
 }

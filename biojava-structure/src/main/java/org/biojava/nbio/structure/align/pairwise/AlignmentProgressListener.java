@@ -22,9 +22,11 @@ package org.biojava.nbio.structure.align.pairwise;
 import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.Calc;
 import org.biojava.nbio.structure.align.helper.JointFragments;
-import org.biojava.nbio.structure.jama.Matrix;
+import org.biojava.nbio.structure.geometry.Matrices;
 
 import javax.swing.*;
+import javax.vecmath.GMatrix;
+
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.List;
@@ -65,8 +67,8 @@ public class AlignmentProgressListener
 		String title = "Initial FragmentPairs for:" +  n1 + "("+l1+")"+ " vs. " + n2 + " ("+l2+")";
 		// ScaleableMatrixPanel panel = new ScaleableMatrixPanel();
 
-
-		Matrix m = new Matrix(l1,l2,99);
+		GMatrix m = new GMatrix(l1,l2);
+		Matrices.fillGMatrix(m, 99);
 
 		for (FragmentPair p : fragments){
 			for (FragmentPair pair2: fragments){
@@ -82,12 +84,12 @@ public class AlignmentProgressListener
 				for (int i =0 ; i < p.getLength(); i++){
 					int p1 = p.getPos1();
 					int p2 = p.getPos2();
-					m.set(p1+i,p2+i,dist);
+					m.setElement(p1+i,p2+i,dist);
 				}
 				for (int i =0 ; i < pair2.getLength(); i++){
 					int p1 = pair2.getPos1();
 					int p2 = pair2.getPos2();
-					m.set(p1+i,p2+i,dist);
+					m.setElement(p1+i,p2+i,dist);
 				}
 
 
@@ -125,11 +127,12 @@ public class AlignmentProgressListener
 		String title = "JointFragment for:" +  n1 + "("+l1+")"+ " vs. " + n2 + " ("+l2+")";
 		// ScaleableMatrixPanel panel = new ScaleableMatrixPanel();
 
-		Matrix m = new Matrix(l1,l2,99);
+		GMatrix m = new GMatrix(l1,l2);
+		Matrices.fillGMatrix(m, 99);
 
 		for (JointFragments p : fragments){
 			for (int[] idx : p.getIdxlist() ){
-				m.set(idx[0],idx[1],p.getRms());
+				m.setElement(idx[0],idx[1],p.getRms());
 			}
 		}
 		// panel.setMatrix(m);

@@ -298,8 +298,7 @@ public class OptimalCECPMain extends CeMain {
 			cols[i] = (i + cpCols) % cols.length;
 		}
 
-		GMatrix newMat = Matrices.jamaToVecmath(Matrices.vecmathToJama(mat)
-				.getMatrix(rows, cols));
+		GMatrix newMat = Matrices.getPermutatedMatrix(mat, rows, cols);
 		assert (newMat.getNumRow() == mat.getNumRow());
 		assert (newMat.getNumCol() == mat.getNumCol());
 		assert (newMat.getElement(0, 0) == mat.getElement(cpRows % mat.getNumRow(),
