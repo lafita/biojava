@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import javax.vecmath.GMatrix;
 import javax.vecmath.Matrix4d;
 
 import org.biojava.nbio.core.alignment.matrices.SubstitutionMatrixHelper;
@@ -57,7 +58,6 @@ import org.biojava.nbio.structure.align.multiple.Block;
 import org.biojava.nbio.structure.align.multiple.BlockSet;
 import org.biojava.nbio.structure.align.multiple.MultipleAlignment;
 import org.biojava.nbio.structure.align.util.AlignmentTools;
-import org.biojava.nbio.structure.jama.Matrix;
 import org.forester.evoinference.matrix.distance.BasicSymmetricalDistanceMatrix;
 import org.forester.phylogeny.Phylogeny;
 
@@ -571,7 +571,7 @@ public class MultipleAlignmentTools {
 	 *            MultipleAlignment
 	 * @return Matrix containing all average residue distances
 	 */
-	public static Matrix getAverageResidueDistances(MultipleAlignment msa) {
+	public static GMatrix getAverageResidueDistances(MultipleAlignment msa) {
 		List<Atom[]> transformed = transformAtoms(msa);
 		return getAverageResidueDistances(transformed);
 	}

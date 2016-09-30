@@ -127,7 +127,8 @@ public class Matrices {
 	/**
 	 * Convert a vecmath GMatrix to a JAMA matrix.
 	 * 
-	 * @param gmatrix a vecmath GMatrix
+	 * @param gmatrix
+	 *            a vecmath GMatrix
 	 * @return
 	 */
 	public static Matrix vecmathToJama(GMatrix gmatrix) {
@@ -137,18 +138,34 @@ public class Matrices {
 	/**
 	 * Convert a vecmath GMatrix to a double[][] matrix.
 	 * 
-	 * @param gmatrix a vecmath GMatrix
+	 * @param gmatrix
+	 *            a vecmath GMatrix
 	 * @return
 	 */
 	public static double[][] vecmathToDouble(GMatrix gmatrix) {
-		
+
 		double[][] matrix = new double[gmatrix.getNumRow()][];
-		
+
 		for (int r = 0; r < gmatrix.getNumRow(); r++) {
 			matrix[r] = new double[gmatrix.getNumCol()];
 			gmatrix.getColumn(r, matrix[r]);
 		}
-		
+
 		return matrix;
+	}
+
+	/**
+	 * Fill all the elements of a GMatrix with the specified value.
+	 * 
+	 * @param gmatrix
+	 * @param value
+	 */
+	public static void fillGMatrix(GMatrix gmatrix, double value) {
+		
+		for (int r = 0; r < gmatrix.getNumRow(); r++) {
+			for (int c = 0; c < gmatrix.getNumCol(); c++) {
+				gmatrix.setElement(r, c, value);
+			}
+		}
 	}
 }

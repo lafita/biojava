@@ -30,6 +30,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
 
+import javax.vecmath.GMatrix;
+
 import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.align.multiple.Block;
@@ -40,7 +42,6 @@ import org.biojava.nbio.structure.align.multiple.util.CoreSuperimposer;
 import org.biojava.nbio.structure.align.multiple.util.MultipleAlignmentScorer;
 import org.biojava.nbio.structure.align.multiple.util.MultipleAlignmentTools;
 import org.biojava.nbio.structure.align.multiple.util.MultipleSuperimposer;
-import org.biojava.nbio.structure.jama.Matrix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -401,7 +402,7 @@ public class MultipleMcOptimizer implements Callable<MultipleAlignment> {
 	private boolean insertGap() {
 
 		// Select residue by maximum distance
-		Matrix residueDistances = MultipleAlignmentTools
+		GMatrix residueDistances = MultipleAlignmentTools
 				.getAverageResidueDistances(msa);
 		double maxDist = Double.MIN_VALUE;
 		int structure = 0;
@@ -411,14 +412,14 @@ public class MultipleMcOptimizer implements Callable<MultipleAlignment> {
 		for (int b = 0; b < blockNr; b++) {
 			for (int col = 0; col < msa.getBlock(b).length(); col++) {
 				for (int str = 0; str < size; str++) {
-					if (residueDistances.get(str, column) != -1) {
-						if (residueDistances.get(str, column) > maxDist) {
+					if (residueDistances.getElement(str, column) != -1) {
+						if (residueDistances.getElement(str, column) > maxDist) {
 							// Geometric distribution
 							if (rnd.nextDouble() > 0.5) {
 								structure = str;
 								block = b;
 								position = col;
-								maxDist = residueDistances.get(str, column);
+								maxDist = residueDistances.getElement(str, column);
 							}
 						}
 					}
@@ -777,7 +778,7 @@ public class MultipleMcOptimizer implements Callable<MultipleAlignment> {
 	private boolean shrinkBlock() {
 
 		// Select column by maximum distance
-		Matrix residueDistances = MultipleAlignmentTools
+		GMatrix residueDistances = MultipleAlignmentTools
 				.getAverageResidueDistances(msa);
 		double[] colDistances = new double[msa.length()];
 		double maxDist = Double.MIN_VALUE;
@@ -788,8 +789,8 @@ public class MultipleMcOptimizer implements Callable<MultipleAlignment> {
 			for (int col = 0; col < msa.getBlock(b).length(); col++) {
 				int normalize = 0;
 				for (int s = 0; s < size; s++) {
-					if (residueDistances.get(s, column) != -1) {
-						colDistances[column] += residueDistances.get(s, column);
+					if (residueDistances.getElement(s, column) != -1) {
+						colDistances[column] += residueDistances.getElement(s, column);
 						normalize++;
 					}
 				}

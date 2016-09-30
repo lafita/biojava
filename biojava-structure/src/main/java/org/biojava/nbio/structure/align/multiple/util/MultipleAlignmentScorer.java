@@ -24,11 +24,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.vecmath.GMatrix;
+
 import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.Calc;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.align.multiple.MultipleAlignment;
-import org.biojava.nbio.structure.jama.Matrix;
+import org.biojava.nbio.structure.geometry.Matrices;
 
 /**
  * Utility class for calculating common scores of {@link MultipleAlignment}s.
@@ -448,7 +450,8 @@ public class MultipleAlignmentScorer {
 
 		int size = trans.size();
 		int length = trans.get(0).length;
-		Matrix residueDistances = new Matrix(size, length, -1);
+		GMatrix residueDistances = new GMatrix(size, length);
+		Matrices.fillGMatrix(residueDistances, -1);
 		double scoreMC = 0.0;
 		int openGaps = 0;
 		int extensionGaps = 0;
@@ -474,17 +477,17 @@ public class MultipleAlignmentScorer {
 					Atom atom = trans.get(r2)[c];
 					if (atom != null) {
 						double distance = Calc.getDistance(refAtom, atom);
-						if (residueDistances.get(r1, c) == -1) {
-							residueDistances.set(r1, c, 1 + distance);
+						if (residueDistances.getElement(r1, c) == -1) {
+							residueDistances.setElement(r1, c, 1 + distance);
 						} else {
-							residueDistances.set(r1, c,
-									residueDistances.get(r1, c) + distance);
+							residueDistances.setElement(r1, c,
+									residueDistances.getElement(r1, c) + distance);
 						}
-						if (residueDistances.get(r2, c) == -1) {
-							residueDistances.set(r2, c, 1 + distance);
+						if (residueDistances.getElement(r2, c) == -1) {
+							residueDistances.setElement(r2, c, 1 + distance);
 						} else {
-							residueDistances.set(r2, c,
-									residueDistances.get(r2, c) + distance);
+							residueDistances.setElement(r2, c,
+									residueDistances.getElement(r2, c) + distance);
 						}
 					}
 				}
@@ -494,12 +497,12 @@ public class MultipleAlignmentScorer {
 		for (int c = 0; c < length; c++) {
 			int nonNullRes = 0;
 			for (int r = 0; r < size; r++) {
-				if (residueDistances.get(r, c) != -1)
+				if (residueDistances.getElement(r, c) != -1)
 					nonNullRes++;
 			}
 			for (int r = 0; r < size; r++) {
-				if (residueDistances.get(r, c) != -1) {
-					residueDistances.set(r, c, residueDistances.get(r, c)
+				if (residueDistances.getElement(r, c) != -1) {
+					residueDistances.setElement(r, c, residueDistances.getElement(r, c)
 							/ nonNullRes);
 				}
 			}
@@ -508,9 +511,9 @@ public class MultipleAlignmentScorer {
 		// Sum all the aligned residue scores
 		for (int row = 0; row < size; row++) {
 			for (int col = 0; col < length; col++) {
-				if (residueDistances.get(row, col) == -1)
+				if (residueDistances.getElement(row, col) == -1)
 					continue;
-				double d1 = residueDistances.get(row, col);
+				double d1 = residueDistances.getElement(row, col);
 				double resScore = 20.0 / (1 + (d1 * d1) / (d0 * d0));
 				scoreMC += resScore - A;
 			}

@@ -30,10 +30,11 @@ import org.biojava.nbio.structure.align.ce.CeSideChainMain;
 import org.biojava.nbio.structure.align.fatcat.FatCatFlexible;
 import org.biojava.nbio.structure.align.seq.SmithWaterman3Daligner;
 import org.biojava.nbio.structure.align.util.AFPAlignmentDisplay;
-import org.biojava.nbio.structure.jama.Matrix;
 
 import java.io.StringWriter;
 import java.util.List;
+
+import javax.vecmath.Matrix4d;
 
 /** A class to convert the data in an AfpChain object to various String outputs.
  *
@@ -1091,22 +1092,20 @@ public class AfpChainWriter
 		return str.toString();
 	}
 
-	public static String toRotMat(AFPChain afpChain)
-	{
+	public static String toRotMat(AFPChain afpChain) {
 
-		Matrix[] blockRotationMatrix = afpChain.getBlockRotationMatrix();
+		Matrix4d[] blockTransformation = afpChain.getBlockTransformation();
 		int blockNum = afpChain.getBlockNum();
-		Atom[] blockShiftVector = afpChain.getBlockShiftVector();
 
 		StringBuffer txt = new StringBuffer();
 
-		if ( blockRotationMatrix == null || blockRotationMatrix.length < 1)
+		if ( blockTransformation == null || blockTransformation.length < 1)
 			return "";
 
 
 		for ( int blockNr = 0 ; blockNr < blockNum  ; blockNr++){
-			Matrix m = blockRotationMatrix[blockNr];
-			Atom shift   = blockShiftVector[blockNr];
+			Matrix4d m = blockTransformation[blockNr];
+			
 			if ( blockNum > 1) {
 				txt.append("Operations for block " );
 				txt.append(blockNr);
@@ -1117,12 +1116,20 @@ public class AfpChainWriter
 			if ( blockNr > 0)
 				origString = String.valueOf(blockNr);
 
-
-			txt.append(String.format("     X"+(blockNr+1)+" = (%9.6f)*X"+ origString +" + (%9.6f)*Y"+ origString +" + (%9.6f)*Z"+ origString +" + (%12.6f)",m.get(0,0),m.get(1,0), m.get(2,0), shift.getX()));
-			txt.append( newline);
-			txt.append(String.format("     Y"+(blockNr+1)+" = (%9.6f)*X"+ origString +" + (%9.6f)*Y"+ origString +" + (%9.6f)*Z"+ origString +" + (%12.6f)",m.get(0,1),m.get(1,1), m.get(2,1), shift.getY()));
-			txt.append( newline);
-			txt.append(String.format("     Z"+(blockNr+1)+" = (%9.6f)*X"+ origString +" + (%9.6f)*Y"+ origString +" + (%9.6f)*Z"+ origString +" + (%12.6f)",m.get(0,2),m.get(1,2), m.get(2,2), shift.getZ()));
+			txt.append(String.format("     X" + (blockNr + 1) + " = (%9.6f)*X"
+					+ origString + " + (%9.6f)*Y" + origString + " + (%9.6f)*Z"
+					+ origString + " + (%12.6f)", m.getElement(0, 0),
+					m.getElement(1, 0), m.getElement(2, 0), m.getElement(3, 0)));
+			txt.append(newline);
+			txt.append(String.format("     Y" + (blockNr + 1) + " = (%9.6f)*X"
+					+ origString + " + (%9.6f)*Y" + origString + " + (%9.6f)*Z"
+					+ origString + " + (%12.6f)", m.getElement(0, 1),
+					m.getElement(1, 1), m.getElement(2, 1), m.getElement(3, 1)));
+			txt.append(newline);
+			txt.append(String.format("     Z" + (blockNr + 1) + " = (%9.6f)*X"
+					+ origString + " + (%9.6f)*Y" + origString + " + (%9.6f)*Z"
+					+ origString + " + (%12.6f)", m.getElement(0, 2), m.getElement(1, 2),
+					m.getElement(2, 2), m.getElement(3, 2)));
 			txt.append(newline);
 		}
 		return txt.toString();

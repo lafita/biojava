@@ -22,9 +22,10 @@ package org.biojava.nbio.structure.align.multiple;
 
 import java.util.List;
 
+import javax.vecmath.GMatrix;
+
 import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.StructureIdentifier;
-import org.biojava.nbio.structure.jama.Matrix;
 
 /**
  * A MultipleAlignmentEnsemble is a collection of {@link MultipleAlignment}s
@@ -149,7 +150,7 @@ public interface MultipleAlignmentEnsemble extends ScoresCache {
 	 * @return List of Matrix interatomic distance matrices.
 	 * @see #updateDistanceMatrix()
 	 */
-	public List<Matrix> getDistanceMatrix();
+	public List<GMatrix> getDistanceMatrix();
 
 	/**
 	 * Returns the List of MultipleAlignments in the ensemble.

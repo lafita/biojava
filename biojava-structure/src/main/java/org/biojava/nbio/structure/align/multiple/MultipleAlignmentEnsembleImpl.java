@@ -26,10 +26,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.vecmath.GMatrix;
 import javax.vecmath.Matrix4d;
 
 import org.biojava.nbio.structure.Atom;
-import org.biojava.nbio.structure.Calc;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureIdentifier;
 import org.biojava.nbio.structure.align.client.StructureName;
@@ -37,7 +37,6 @@ import org.biojava.nbio.structure.align.helper.AlignTools;
 import org.biojava.nbio.structure.align.model.AFPChain;
 import org.biojava.nbio.structure.align.multiple.util.MultipleAlignmentScorer;
 import org.biojava.nbio.structure.align.util.AtomCache;
-import org.biojava.nbio.structure.jama.Matrix;
 
 /**
  * A general implementation of a {@link MultipleAlignmentEnsemble}.
@@ -60,7 +59,7 @@ public class MultipleAlignmentEnsembleImpl extends AbstractScoresCache
 	// Structure Identifiers
 	private List<StructureIdentifier> structureIdentifiers;
 	private List<Atom[]> atomArrays;
-	private List<Matrix> distanceMatrix;
+	private List<GMatrix> distanceMatrix;
 
 	private List<MultipleAlignment> multipleAlignments;
 
@@ -115,9 +114,9 @@ public class MultipleAlignmentEnsembleImpl extends AbstractScoresCache
 		distanceMatrix = null;
 		if (e.distanceMatrix != null) {
 			// Make a deep copy of everything
-			distanceMatrix = new ArrayList<Matrix>();
-			for (Matrix mat : e.distanceMatrix) {
-				distanceMatrix.add((Matrix) mat.clone());
+			distanceMatrix = new ArrayList<GMatrix>();
+			for (GMatrix mat : e.distanceMatrix) {
+				distanceMatrix.add(new GMatrix(mat));
 			}
 		}
 
@@ -176,8 +175,7 @@ public class MultipleAlignmentEnsembleImpl extends AbstractScoresCache
 		// Convert the rotation and translation to a Matrix4D and set it
 		Matrix4d ident = new Matrix4d();
 		ident.setIdentity();
-		Matrix[] rot = afp.getBlockRotationMatrix();
-		Atom[] shift = afp.getBlockShiftVector();
+		Matrix4d[] blockTransforms = afp.getBlockTransformation();
 
 		// Create a BlockSet for every block in AFPChain if flexible
 		if (flexible) {
@@ -185,7 +183,7 @@ public class MultipleAlignmentEnsembleImpl extends AbstractScoresCache
 				BlockSet blockSet = new BlockSetImpl(msa);
 				Matrix4d blockTr = null;
 				try {
-					blockTr = Calc.getTransformation(rot[bs], shift[bs]);
+					blockTr = blockTransforms[bs];
 				} catch (IndexOutOfBoundsException e) {
 					blockTr = ident;
 				} catch (NullPointerException e) {
@@ -198,9 +196,7 @@ public class MultipleAlignmentEnsembleImpl extends AbstractScoresCache
 				block.getAlignRes().add(new ArrayList<Integer>());
 
 				// Set the transformation of the BlockSet
-				Matrix rotB = afp.getBlockRotationMatrix()[bs];
-				Atom shiftB = afp.getBlockShiftVector()[bs];
-				Matrix4d transformB = Calc.getTransformation(rotB, shiftB);
+				Matrix4d transformB = blockTransforms[bs];
 				blockSet.setTransformations(Arrays.asList(ident, transformB));
 
 				// Convert the optimal alignment to a Block
@@ -214,7 +210,7 @@ public class MultipleAlignmentEnsembleImpl extends AbstractScoresCache
 			BlockSet blockSet = new BlockSetImpl(msa);
 			Matrix4d blockTr = null;
 			try {
-				blockTr = Calc.getTransformation(rot[0], shift[0]);
+				blockTr = blockTransforms[0];
 			} catch (IndexOutOfBoundsException e) {
 				blockTr = ident;
 			} catch (NullPointerException e) {
@@ -333,7 +329,7 @@ public class MultipleAlignmentEnsembleImpl extends AbstractScoresCache
 	}
 
 	@Override
-	public List<Matrix> getDistanceMatrix() {
+	public List<GMatrix> getDistanceMatrix() {
 		if (distanceMatrix == null)
 			updateDistanceMatrix();
 		return distanceMatrix;
@@ -345,11 +341,11 @@ public class MultipleAlignmentEnsembleImpl extends AbstractScoresCache
 	public void updateDistanceMatrix() {
 
 		// Reset the distance Matrix variable
-		distanceMatrix = new ArrayList<Matrix>();
+		distanceMatrix = new ArrayList<GMatrix>();
 
 		for (int s = 0; s < size(); s++) {
 			Atom[] ca = atomArrays.get(s);
-			Matrix distMat = AlignTools.getDistanceMatrix(ca, ca);
+			GMatrix distMat = AlignTools.getDistanceMatrix(ca, ca);
 			distanceMatrix.add(distMat);
 		}
 	}
