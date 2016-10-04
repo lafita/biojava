@@ -58,6 +58,7 @@ import org.biojava.nbio.structure.align.multiple.Block;
 import org.biojava.nbio.structure.align.multiple.BlockSet;
 import org.biojava.nbio.structure.align.multiple.MultipleAlignment;
 import org.biojava.nbio.structure.align.util.AlignmentTools;
+import org.biojava.nbio.structure.geometry.Matrices;
 import org.forester.evoinference.matrix.distance.BasicSymmetricalDistanceMatrix;
 import org.forester.phylogeny.Phylogeny;
 
@@ -104,8 +105,7 @@ public class MultipleAlignmentTools {
 	 * @return a string for each row in the alignment, giving the 1-letter code
 	 *         for each aligned residue.
 	 */
-	public static List<String> getSequenceAlignment(
-			MultipleAlignment alignment, final List<Integer> mapSeqToStruct) {
+	public static List<String> getSequenceAlignment(MultipleAlignment alignment, final List<Integer> mapSeqToStruct) {
 
 		// Initialize sequence variables
 		List<String> alnSequences = new ArrayList<String>();
@@ -172,41 +172,36 @@ public class MultipleAlignmentTools {
 					for (int str = 0; str < alignment.size(); str++) {
 						// If it is the first position or before it was null
 						if (previousPos[str] == -1) {
-							Integer residue = alignment.getBlocks().get(b)
-									.getAlignRes().get(str).get(pos);
+							Integer residue = alignment.getBlocks().get(b).getAlignRes().get(str).get(pos);
 							if (residue == null)
 								provisionalChar[str] = '-';
 							else {
 								Atom a = atoms.get(str)[residue];
 								String group = a.getGroup().getPDBName();
-								provisionalChar[str] = StructureTools
-										.get1LetterCode(group);
+								provisionalChar[str] = StructureTools.get1LetterCode(group);
 							}
 						} else {
-							Integer residue = alignment.getBlocks().get(b)
-									.getAlignRes().get(str).get(pos);
+							Integer residue = alignment.getBlocks().get(b).getAlignRes().get(str).get(pos);
 							int nextPos = previousPos[str] + 1;
 							if (residue == null) {
 								if (freePool.get(str).contains(nextPos)) {
 									Atom a = atoms.get(str)[nextPos];
 									String g = a.getGroup().getPDBName();
 									char aa = StructureTools.get1LetterCode(g);
-									provisionalChar[str] = Character
-											.toLowerCase(aa);
+									provisionalChar[str] = Character.toLowerCase(aa);
 								} else
 									provisionalChar[str] = '-';
 							} else if (nextPos == residue) {
 								Atom a = atoms.get(str)[nextPos];
 								String group = a.getGroup().getPDBName();
-								provisionalChar[str] = StructureTools
-										.get1LetterCode(group);
+								provisionalChar[str] = StructureTools.get1LetterCode(group);
 							} else {
 								// This means non-consecutive
 								provisionalChar[str] = ' ';
 								gaps = true;
 							}
 						}
-					}// End all structure analysis
+					} // End all structure analysis
 
 					if (gaps) {
 						for (int str = 0; str < alignment.size(); str++) {
@@ -215,36 +210,25 @@ public class MultipleAlignmentTools {
 								Atom a = atoms.get(str)[previousPos[str] + 1];
 								String group = a.getGroup().getPDBName();
 								char aa = StructureTools.get1LetterCode(group);
-								alnSequences
-										.set(str,
-												alnSequences
-														.get(str)
-														.concat(String.valueOf(Character
-																		.toLowerCase(aa))) );
+								alnSequences.set(str,
+										alnSequences.get(str).concat(String.valueOf(Character.toLowerCase(aa))));
 								previousPos[str]++;
 							} else {
 								// Insert a gap otherwise
-								alnSequences.set(str, alnSequences.get(str)
-										.concat("-"));
+								alnSequences.set(str, alnSequences.get(str).concat("-"));
 							}
 						}
 						mapSeqToStruct.add(-1); // unaligned position
 					} else {
 						// Add provisional and update the indices
 						for (int str = 0; str < alignment.size(); str++) {
-							alnSequences.set(
-									str,
-									alnSequences.get(str).concat(
-											String.valueOf(provisionalChar[str])));
+							alnSequences.set(str, alnSequences.get(str).concat(String.valueOf(provisionalChar[str])));
 
 							if (provisionalChar[str] != '-') {
-								if (alignment.getBlocks().get(b).getAlignRes()
-										.get(str).get(pos) == null) {
+								if (alignment.getBlocks().get(b).getAlignRes().get(str).get(pos) == null) {
 									previousPos[str]++;
 								} else {
-									previousPos[str] = alignment.getBlocks()
-											.get(b).getAlignRes().get(str)
-											.get(pos);
+									previousPos[str] = alignment.getBlocks().get(b).getAlignRes().get(str).get(pos);
 								}
 							}
 						}
@@ -284,10 +268,7 @@ public class MultipleAlignmentTools {
 				}
 				if (!allGaps) {
 					for (int str = 0; str < alignment.size(); str++) {
-						alnSequences.set(
-								str,
-								alnSequences.get(str).concat(
-										String.valueOf(provisionalChar[str])) );
+						alnSequences.set(str, alnSequences.get(str).concat(String.valueOf(provisionalChar[str])));
 					}
 					mapSeqToStruct.add(-1); // unaligned position
 				}
@@ -342,8 +323,7 @@ public class MultipleAlignmentTools {
 	 * @return a string for each row in the alignment, giving the 1-letter code
 	 *         for each aligned residue.
 	 */
-	public static List<String> getBlockSequenceAlignment(
-			MultipleAlignment alignment, List<Integer> mapSeqToStruct) {
+	public static List<String> getBlockSequenceAlignment(MultipleAlignment alignment, List<Integer> mapSeqToStruct) {
 
 		// Initialize sequence variables
 		List<String> alnSequences = new ArrayList<String>();
@@ -378,8 +358,7 @@ public class MultipleAlignmentTools {
 					for (int str = 0; str < alignment.size(); str++) {
 						// If it is the first position or before it was null
 						if (previousPos[str] == -1) {
-							Integer residue = alignment.getBlocks().get(b)
-									.getAlignRes().get(str).get(pos);
+							Integer residue = alignment.getBlocks().get(b).getAlignRes().get(str).get(pos);
 							if (residue == null)
 								provisionalChar[str] = '-';
 							else {
@@ -389,8 +368,7 @@ public class MultipleAlignmentTools {
 								provisionalChar[str] = aa;
 							}
 						} else {
-							Integer residue = alignment.getBlocks().get(b)
-									.getAlignRes().get(str).get(pos);
+							Integer residue = alignment.getBlocks().get(b).getAlignRes().get(str).get(pos);
 							if (residue == null)
 								provisionalChar[str] = '-';
 							else if (previousPos[str] + 1 == residue) {
@@ -403,7 +381,7 @@ public class MultipleAlignmentTools {
 								gaps = true;
 							}
 						}
-					}// End all structures analysis
+					} // End all structures analysis
 
 					if (gaps) {
 						for (int str = 0; str < alignment.size(); str++) {
@@ -414,16 +392,10 @@ public class MultipleAlignmentTools {
 										int next = previousPos[str] + 1;
 										Atom a = atoms.get(s2)[next];
 										String g = a.getGroup().getPDBName();
-										char aa = StructureTools
-												.get1LetterCode(g);
-										alnSequences.set(
-												s2,
-												alnSequences.get(s2).concat(
-														String.valueOf(aa)) );
+										char aa = StructureTools.get1LetterCode(g);
+										alnSequences.set(s2, alnSequences.get(s2).concat(String.valueOf(aa)));
 									} else {
-										alnSequences.set(s2,
-												alnSequences.get(s2)
-														.concat("-"));
+										alnSequences.set(s2, alnSequences.get(s2).concat("-"));
 									}
 								}
 								mapSeqToStruct.add(-1); // unaligned
@@ -432,13 +404,9 @@ public class MultipleAlignmentTools {
 						}
 					} else { // Append the provisional and update the indices
 						for (int str = 0; str < alignment.size(); str++) {
-							alnSequences.set(
-									str,
-									alnSequences.get(str).concat(
-											String.valueOf(provisionalChar[str])) );
+							alnSequences.set(str, alnSequences.get(str).concat(String.valueOf(provisionalChar[str])));
 							if (provisionalChar[str] != '-') {
-								previousPos[str] = alignment.getBlocks().get(b)
-										.getAlignRes().get(str).get(pos);
+								previousPos[str] = alignment.getBlocks().get(b).getAlignRes().get(str).get(pos);
 							}
 						}
 						mapSeqToStruct.add(globalPos);
@@ -490,8 +458,8 @@ public class MultipleAlignmentTools {
 	 *            the sequence alignment position (column)
 	 * @return Atom the atom in that position or null if there is a gap
 	 */
-	public static Atom getAtomForSequencePosition(MultipleAlignment msa,
-			List<Integer> mapSeqToStruct, int str, int sequencePos) {
+	public static Atom getAtomForSequencePosition(MultipleAlignment msa, List<Integer> mapSeqToStruct, int str,
+			int sequencePos) {
 
 		int seqPos = mapSeqToStruct.get(sequencePos);
 
@@ -537,8 +505,8 @@ public class MultipleAlignmentTools {
 	 *            the position in the sequence alignment (column)
 	 * @return int the block index, or -1 if the position is not aligned
 	 */
-	public static int getBlockForSequencePosition(MultipleAlignment multAln,
-			List<Integer> mapSeqToStruct, int sequencePos) {
+	public static int getBlockForSequencePosition(MultipleAlignment multAln, List<Integer> mapSeqToStruct,
+			int sequencePos) {
 
 		int seqPos = mapSeqToStruct.get(sequencePos);
 		// Check if the position selected is an aligned position
@@ -589,11 +557,12 @@ public class MultipleAlignmentTools {
 	 * @return Matrix containing all average residue distances. Entry -1 means
 	 *         there is a gap in the position.
 	 */
-	public static Matrix getAverageResidueDistances(List<Atom[]> transformed) {
+	public static GMatrix getAverageResidueDistances(List<Atom[]> transformed) {
 
 		int size = transformed.size();
 		int length = transformed.get(0).length;
-		Matrix resDist = new Matrix(size, length, -1);
+		GMatrix resDist = new GMatrix(size, length);
+		Matrices.fillGMatrix(resDist, -1);
 
 		// Calculate the average residue distances
 		for (int r1 = 0; r1 < size; r1++) {
@@ -607,16 +576,16 @@ public class MultipleAlignmentTools {
 					if (atom != null) {
 						double distance = Calc.getDistance(refAtom, atom);
 
-						if (resDist.get(r1, c) == -1) {
-							resDist.set(r1, c, 1 + distance);
+						if (resDist.getElement(r1, c) == -1) {
+							resDist.setElement(r1, c, 1 + distance);
 						} else {
-							resDist.set(r1, c, resDist.get(r1, c) + distance);
+							resDist.setElement(r1, c, resDist.getElement(r1, c) + distance);
 						}
 
-						if (resDist.get(r2, c) == -1) {
-							resDist.set(r2, c, 1 + distance);
+						if (resDist.getElement(r2, c) == -1) {
+							resDist.setElement(r2, c, 1 + distance);
 						} else {
-							resDist.set(r2, c, resDist.get(r2, c) + distance);
+							resDist.setElement(r2, c, resDist.getElement(r2, c) + distance);
 						}
 					}
 				}
@@ -626,12 +595,12 @@ public class MultipleAlignmentTools {
 		for (int c = 0; c < length; c++) {
 			int nonNullRes = 0;
 			for (int r = 0; r < size; r++) {
-				if (resDist.get(r, c) != -1)
+				if (resDist.getElement(r, c) != -1)
 					nonNullRes++;
 			}
 			for (int r = 0; r < size; r++) {
-				if (resDist.get(r, c) != -1) {
-					resDist.set(r, c, resDist.get(r, c) / nonNullRes);
+				if (resDist.getElement(r, c) != -1) {
+					resDist.setElement(r, c, resDist.getElement(r, c) / nonNullRes);
 				}
 			}
 		}
@@ -681,17 +650,15 @@ public class MultipleAlignmentTools {
 
 				for (Block blk : bs.getBlocks()) {
 					if (blk.size() != atomArrays.size()) {
-						throw new IllegalStateException(String.format(
-								"Mismatched block size. Expected %d "
-										+ "structures, found %d.",
-								atomArrays.size(), blk.size()));
+						throw new IllegalStateException(
+								String.format("Mismatched block size. Expected %d " + "structures, found %d.",
+										atomArrays.size(), blk.size()));
 					}
 					// Extract aligned atoms
 					for (int j = 0; j < blk.length(); j++) {
 						Integer alignedPos = blk.getAlignRes().get(i).get(j);
 						if (alignedPos != null) {
-							blocksetAtoms[blockPos] = (Atom) curr[alignedPos]
-									.clone();
+							blocksetAtoms[blockPos] = (Atom) curr[alignedPos].clone();
 						}
 						blockPos++;
 					}
@@ -789,15 +756,14 @@ public class MultipleAlignmentTools {
 	 * @return MultipleSequenceAlignment of protein sequences
 	 * @throws CompoundNotFoundException
 	 */
-	public static MultipleSequenceAlignment<ProteinSequence, AminoAcidCompound> toProteinMSA(
-			MultipleAlignment msta) throws CompoundNotFoundException {
+	public static MultipleSequenceAlignment<ProteinSequence, AminoAcidCompound> toProteinMSA(MultipleAlignment msta)
+			throws CompoundNotFoundException {
 
 		// Check that the alignment is of protein structures
 		Group g = msta.getAtomArrays().get(0)[0].getGroup();
 		if (!(g instanceof AminoAcid)) {
 			throw new IllegalArgumentException(
-					"Cannot convert to multiple sequence alignment: "
-							+ "the structures aligned are not proteins");
+					"Cannot convert to multiple sequence alignment: " + "the structures aligned are not proteins");
 		}
 
 		MultipleSequenceAlignment<ProteinSequence, AminoAcidCompound> msa = new MultipleSequenceAlignment<ProteinSequence, AminoAcidCompound>();
@@ -820,14 +786,13 @@ public class MultipleAlignmentTools {
 		}
 		return msa;
 	}
-	
-	public static Structure toMultimodelStructure(MultipleAlignment multAln, List<Atom[]> transformedAtoms) throws StructureException {
-		PDBHeader header = new PDBHeader();
-		String title = multAln.getEnsemble().getAlgorithmName() + " V."
-				+ multAln.getEnsemble().getVersion() + " : ";
 
-		for (StructureIdentifier name : multAln.getEnsemble()
-				.getStructureIdentifiers()) {
+	public static Structure toMultimodelStructure(MultipleAlignment multAln, List<Atom[]> transformedAtoms)
+			throws StructureException {
+		PDBHeader header = new PDBHeader();
+		String title = multAln.getEnsemble().getAlgorithmName() + " V." + multAln.getEnsemble().getVersion() + " : ";
+
+		for (StructureIdentifier name : multAln.getEnsemble().getStructureIdentifiers()) {
 			title += name.getIdentifier() + " ";
 		}
 		Structure artificial = getAlignedStructure(transformedAtoms);
@@ -838,26 +803,26 @@ public class MultipleAlignmentTools {
 	}
 
 	/**
-	 * Get an artificial Structure containing a different model for every
-	 * input structure, so that the alignment result can be viewed in Jmol.
-	 * The Atoms have to be rotated beforehand.
+	 * Get an artificial Structure containing a different model for every input
+	 * structure, so that the alignment result can be viewed in Jmol. The Atoms
+	 * have to be rotated beforehand.
 	 *
-	 * @param atomArrays an array of Atoms for every aligned structure
-	 * @return a structure object containing a set of models,
-	 * 			one for each input array of Atoms.
+	 * @param atomArrays
+	 *            an array of Atoms for every aligned structure
+	 * @return a structure object containing a set of models, one for each input
+	 *         array of Atoms.
 	 * @throws StructureException
 	 */
-	public static final Structure getAlignedStructure(List<Atom[]> atomArrays)
-			throws StructureException {
+	public static final Structure getAlignedStructure(List<Atom[]> atomArrays) throws StructureException {
 
 		Structure s = new StructureImpl();
-		for (int i=0; i<atomArrays.size(); i++){
+		for (int i = 0; i < atomArrays.size(); i++) {
 			List<Chain> model = AlignmentTools.getAlignedModel(atomArrays.get(i));
 			s.addModel(model);
 		}
 		return s;
 	}
-	
+
 	/**
 	 * Calculate the RMSD matrix of a MultipleAlignment, that is, entry (i,j) of
 	 * the matrix contains the RMSD between structures i and j.
@@ -866,21 +831,21 @@ public class MultipleAlignmentTools {
 	 *            Multiple Structure Alignment
 	 * @return Matrix of RMSD with size the number of structures squared
 	 */
-	public static Matrix getRMSDMatrix(MultipleAlignment msa) {
+	public static GMatrix getRMSDMatrix(MultipleAlignment msa) {
 
-		Matrix rmsdMat = new Matrix(msa.size(), msa.size());
+		GMatrix rmsdMat = new GMatrix(msa.size(), msa.size());
 		List<Atom[]> superposed = transformAtoms(msa);
 
 		for (int i = 0; i < msa.size(); i++) {
 			for (int j = i; j < msa.size(); j++) {
 				if (i == j)
-					rmsdMat.set(i, j, 0.0);
+					rmsdMat.setElement(i, j, 0.0);
 				List<Atom[]> compared = new ArrayList<Atom[]>();
 				compared.add(superposed.get(i));
 				compared.add(superposed.get(j));
 				double rmsd = MultipleAlignmentScorer.getRMSD(compared);
-				rmsdMat.set(i, j, rmsd);
-				rmsdMat.set(j, i, rmsd);
+				rmsdMat.setElement(i, j, rmsd);
+				rmsdMat.setElement(j, i, rmsd);
 			}
 		}
 		return rmsdMat;
@@ -896,14 +861,11 @@ public class MultipleAlignmentTools {
 	 * @throws CompoundNotFoundException
 	 * @throws IOException
 	 */
-	public static Phylogeny getKimuraTree(MultipleAlignment msta)
-			throws CompoundNotFoundException, IOException {
-		MultipleSequenceAlignment<ProteinSequence, AminoAcidCompound> msa = MultipleAlignmentTools
-				.toProteinMSA(msta);
+	public static Phylogeny getKimuraTree(MultipleAlignment msta) throws CompoundNotFoundException, IOException {
+		MultipleSequenceAlignment<ProteinSequence, AminoAcidCompound> msa = MultipleAlignmentTools.toProteinMSA(msta);
 		BasicSymmetricalDistanceMatrix distmat = (BasicSymmetricalDistanceMatrix) DistanceMatrixCalculator
 				.kimuraDistance(msa);
-		Phylogeny tree = TreeConstructor.distanceTree(distmat,
-				TreeConstructorType.NJ);
+		Phylogeny tree = TreeConstructor.distanceTree(distmat, TreeConstructorType.NJ);
 		tree.setName("Kimura Tree");
 		return tree;
 	}
@@ -920,14 +882,11 @@ public class MultipleAlignmentTools {
 	 * @throws CompoundNotFoundException
 	 * @throws IOException
 	 */
-	public static Phylogeny getHSDMTree(MultipleAlignment msta)
-			throws CompoundNotFoundException, IOException {
-		MultipleSequenceAlignment<ProteinSequence, AminoAcidCompound> msa = MultipleAlignmentTools
-				.toProteinMSA(msta);
+	public static Phylogeny getHSDMTree(MultipleAlignment msta) throws CompoundNotFoundException, IOException {
+		MultipleSequenceAlignment<ProteinSequence, AminoAcidCompound> msa = MultipleAlignmentTools.toProteinMSA(msta);
 		BasicSymmetricalDistanceMatrix distmat = (BasicSymmetricalDistanceMatrix) DistanceMatrixCalculator
 				.dissimilarityScore(msa, SubstitutionMatrixHelper.getAminoAcidSubstitutionMatrix("PRLA000102"));
-		Phylogeny tree = TreeConstructor.distanceTree(distmat,
-				TreeConstructorType.NJ);
+		Phylogeny tree = TreeConstructor.distanceTree(distmat, TreeConstructorType.NJ);
 		tree.setName("HSDM Tree");
 		return tree;
 	}
@@ -942,8 +901,10 @@ public class MultipleAlignmentTools {
 	 * @throws CompoundNotFoundException
 	 */
 	public static Phylogeny getStructuralTree(MultipleAlignment msta) {
-		double[][] rmsdMat = MultipleAlignmentTools.getRMSDMatrix(msta)
-				.getArray();
+		
+		GMatrix matrix = MultipleAlignmentTools.getRMSDMatrix(msta);
+		double[][] rmsdMat = Matrices.vecmathToDouble(matrix);
+		
 		BasicSymmetricalDistanceMatrix rmsdDist = (BasicSymmetricalDistanceMatrix) DistanceMatrixCalculator
 				.structuralDistance(rmsdMat, 1, 5, 0.4);
 		// Set the identifiers of the matrix

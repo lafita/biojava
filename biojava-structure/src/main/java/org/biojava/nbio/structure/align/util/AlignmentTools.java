@@ -27,7 +27,6 @@ import org.biojava.nbio.structure.align.fatcat.FatCatFlexible;
 import org.biojava.nbio.structure.align.fatcat.FatCatRigid;
 import org.biojava.nbio.structure.align.model.AFPChain;
 import org.biojava.nbio.structure.align.xml.AFPChainXMLParser;
-import org.biojava.nbio.structure.geometry.Matrices;
 import org.biojava.nbio.structure.geometry.SuperPositions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -589,10 +588,8 @@ public class AlignmentTools {
 		a.setOptLen(new int[] {alnLen});
 
 
-		Matrix[] ms = new Matrix[a.getBlockNum()];
-		a.setBlockRotationMatrix(ms);
-		Atom[] blockShiftVector = new Atom[a.getBlockNum()];
-		a.setBlockShiftVector(blockShiftVector);
+		Matrix4d[] tr = new Matrix4d[a.getBlockNum()];
+		a.setBlockTransformation(tr);
 
 		String[][][] pdbAln = new String[1][2][alnLen];
 		for(int i=0;i<alnLen;i++) {
@@ -884,22 +881,14 @@ public class AlignmentTools {
 		Matrix4d trans = SuperPositions.superpose(Calc.atomsToPoints(ca1aligned),
 				Calc.atomsToPoints(ca2aligned));
 
-		Matrix matrix = Matrices.getRotationJAMA(trans);
-		Atom shift = Calc.getTranslationVector(trans);
+		Matrix4d[] blockTrs = new Matrix4d[afpChain.getBlockNum()];
+		Arrays.fill(blockTrs, trans);
+		afpChain.setBlockTransformation(blockTrs);
 
-		Matrix[] blockMxs = new Matrix[afpChain.getBlockNum()];
-		Arrays.fill(blockMxs, matrix);
-		afpChain.setBlockRotationMatrix(blockMxs);
-		Atom[] blockShifts = new Atom[afpChain.getBlockNum()];
-		Arrays.fill(blockShifts, shift);
-		afpChain.setBlockShiftVector(blockShifts);
+		for (Atom a : ca2aligned)
+			Calc.transform(a, trans);
 
-		for (Atom a : ca2aligned) {
-			Calc.rotate(a, matrix);
-			Calc.shift(a, shift);
-		}
-
-		//Calculate the RMSD and TM score for the new alignment
+		// Calculate the RMSD and TM score for the new alignment
 		double rmsd = Calc.rmsd(ca1aligned, ca2aligned);
 		double tmScore = Calc.getTMScore(ca1aligned, ca2aligned, ca1.length, ca2.length);
 		afpChain.setTotalRmsdOpt(rmsd);
@@ -935,9 +924,7 @@ public class AlignmentTools {
 			Matrix4d transb = SuperPositions.superpose(Calc.atomsToPoints(ca1block),
 					Calc.atomsToPoints(ca2block));
 
-			blockMxs[k] = Matrices.getRotationJAMA(trans);
-			blockShifts[k] = Calc.getTranslationVector(trans);
-
+			blockTrs[k] = transb;
 			Calc.transform(ca2block, transb);
 
 			//Calculate the RMSD and TM score for the block
@@ -1261,7 +1248,8 @@ public class AlignmentTools {
 		return s;
 	}
 
-	/** Rotate the Atoms/Groups so they are aligned for the 3D visualisation
+	/** 
+	 * Rotate the Atoms/Groups so they are aligned for the 3D visualisation
 	 *
 	 * @param afpChain
 	 * @param ca1
@@ -1269,14 +1257,16 @@ public class AlignmentTools {
 	 * @return an array of Groups that are transformed for 3D display
 	 * @throws StructureException
 	 */
-	public static Group[] prepareGroupsForDisplay(AFPChain afpChain, Atom[] ca1, Atom[] ca2) throws StructureException{
+	public static Group[] prepareGroupsForDisplay(AFPChain afpChain, Atom[] ca1, 
+			Atom[] ca2) throws StructureException {
 
 
-		if ( afpChain.getBlockRotationMatrix().length == 0 ) {
+		if ( afpChain.getBlockTransformation().length == 0 ) {
 			// probably the alignment is too short!
-			System.err.println("No rotation matrix found to rotate 2nd structure!");
-			afpChain.setBlockRotationMatrix(new Matrix[]{Matrix.identity(3, 3)});
-			afpChain.setBlockShiftVector(new Atom[]{new AtomImpl()});
+			System.err.println("No transformation matrix found!");
+			Matrix4d identity = new Matrix4d();
+			identity.setIdentity();
+			afpChain.setBlockTransformation(new Matrix4d[]{identity});
 		}
 
 		// List of groups to be rotated according to the alignment
@@ -1302,12 +1292,8 @@ public class AlignmentTools {
 
 			//} else  if  (( blockNum == 1 ) || (afpChain.getAlgorithmName().equals(CeCPMain.algorithmName))) {
 		} else {
-
-			Matrix m   =  afpChain.getBlockRotationMatrix()[ 0];
-			Atom shift =  afpChain.getBlockShiftVector()   [ 0 ];
-
-			shiftCA2(afpChain, ca2, m,shift, twistedGroups);
-
+			Matrix4d trans   =  afpChain.getBlockTransformation()[0];
+			shiftCA2(afpChain, ca2, trans, twistedGroups);
 		}
 
 		if ( afpChain.getBlockNum() > 0){
@@ -1315,16 +1301,12 @@ public class AlignmentTools {
 			// Superimpose ligands relative to the first block
 			if( hetatms2.size() > 0 ) {
 
-				if ( afpChain.getBlockRotationMatrix().length > 0 ) {
+				if ( afpChain.getBlockTransformation().length > 0 ) {
 
-					Matrix m1      = afpChain.getBlockRotationMatrix()[0];
-					//m1.print(3,3);
-					Atom   vector1 = afpChain.getBlockShiftVector()[0];
-					//System.out.println("shift vector:" + vector1);
+					Matrix4d tr1      = afpChain.getBlockTransformation()[0];
 
 					for ( Group g : hetatms2){
-						Calc.rotate(g, m1);
-						Calc.shift(g,vector1);
+						Calc.transform(g, tr1);
 					}
 				}
 			}
@@ -1333,26 +1315,25 @@ public class AlignmentTools {
 		return twistedGroups;
 	}
 
-	/** only shift CA positions.
-	 *
+	/** 
+	 * only shift CA positions.
 	 */
-	public static void shiftCA2(AFPChain afpChain, Atom[] ca2,  Matrix m, Atom shift, Group[] twistedGroups) {
+	public static void shiftCA2(AFPChain afpChain, Atom[] ca2, 
+			Matrix4d transformation, Group[] twistedGroups) {
 
 		int i = -1;
 		for (Atom a: ca2){
 			i++;
 			Group g = a.getGroup();
 
-			Calc.rotate(g,m);
-			Calc.shift(g, shift);
+			Calc.transform(g, transformation);
 
 			if (g.hasAltLoc()){
 				for (Group alt: g.getAltLocs()){
 					for (Atom alta : alt.getAtoms()){
 						if ( g.getAtoms().contains(alta))
 							continue;
-						Calc.rotate(alta,m);
-						Calc.shift(alta,shift);
+						Calc.transform(alta, transformation);
 					}
 				}
 			}
