@@ -23,6 +23,7 @@ package org.biojava.nbio.structure.symmetry.internal;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.vecmath.GMatrix;
 import javax.vecmath.Matrix4d;
 
 import org.biojava.nbio.structure.Atom;
@@ -36,7 +37,7 @@ import org.biojava.nbio.structure.align.ce.MatrixListener;
 import org.biojava.nbio.structure.align.model.AFPChain;
 import org.biojava.nbio.structure.align.multiple.MultipleAlignment;
 import org.biojava.nbio.structure.align.util.AFPChainScorer;
-import org.biojava.nbio.structure.jama.Matrix;
+import org.biojava.nbio.structure.geometry.Matrices;
 import org.biojava.nbio.structure.secstruc.SecStrucCalc;
 import org.biojava.nbio.structure.secstruc.SecStrucTools;
 import org.biojava.nbio.structure.symmetry.internal.CESymmParameters.SymmetryType;
@@ -95,8 +96,8 @@ public class CeSymm {
 	private CeSymm() {
 	}
 
-	private static Matrix align(AFPChain afpChain, Atom[] ca1, Atom[] ca2,
-			CESymmParameters params, Matrix origM, CECalculator calculator,
+	private static GMatrix align(AFPChain afpChain, Atom[] ca1, Atom[] ca2,
+			CESymmParameters params, GMatrix origM, CECalculator calculator,
 			int counter) throws StructureException {
 
 		int fragmentLength = params.getWinSize();
@@ -124,14 +125,14 @@ public class CeSymm {
 					rows, cols, calculator, origM, blankWindowSize);
 		}
 
-		Matrix clone = (Matrix) origM.clone();
+		GMatrix clone = new GMatrix(origM);
 
 		// that's the matrix to run the alignment on..
-		calculator.setMatMatrix(clone.getArray());
+		calculator.setMatMatrix(Matrices.vecmathToDouble(clone));
 
 		calculator.traceFragmentMatrix(afpChain, ca1, ca2clone);
 
-		final Matrix origMfinal = (Matrix) origM.clone();
+		final GMatrix origMfinal = new GMatrix(origM);
 		// Add a matrix listener to keep the blacked zones in max.
 		calculator.addMatrixListener(new MatrixListener() {
 
@@ -141,8 +142,8 @@ public class CeSymm {
 				// Check every entry of origM for blacked out regions
 				for (int i = 0; i < max.length; i++) {
 					for (int j = 0; j < max[i].length; j++) {
-						if (origMfinal.getArray()[i][j] > 1e9) {
-							max[i][j] = -origMfinal.getArray()[i][j];
+						if (origMfinal.getElement(i,j) > 1e9) {
+							max[i][j] = -origMfinal.getElement(i,j);
 						}
 					}
 				}
@@ -184,10 +185,10 @@ public class CeSymm {
 			throw new StructureException("Aligning empty structure");
 		}
 
-		Matrix origM = null;
+		GMatrix origM = null;
 		AFPChain myAFP = new AFPChain(algorithmName);
 		CECalculator calculator = new CECalculator(params);
-		Matrix lastMatrix = null;
+		GMatrix lastMatrix = null;
 
 		List<AFPChain> selfAlignments = new ArrayList<AFPChain>();
 		AFPChain optimalAFP = null;
@@ -196,7 +197,7 @@ public class CeSymm {
 		int i = 0;
 		do {
 			if (origM != null)
-				myAFP.setDistanceMatrix((Matrix) origM.clone());
+				myAFP.setDistanceMatrix(new GMatrix(origM));
 
 			origM = align(myAFP, atoms, ca2, params, origM, calculator, i);
 
@@ -217,7 +218,7 @@ public class CeSymm {
 				if (i == 0)
 					selfAlignments.add(newAFP);
 				// store final matrix
-				lastMatrix = newAFP.getDistanceMatrix().copy();
+				lastMatrix = new GMatrix(newAFP.getDistanceMatrix());
 				break;
 			}
 
@@ -234,8 +235,9 @@ public class CeSymm {
 			lastMatrix = SymmetryTools.blankOutPreviousAlignment(last, ca2,
 					last.getCa1Length(), last.getCa2Length(), calculator,
 					origM, params.getWinSize());
-			lastMatrix = lastMatrix.getMatrix(0, last.getCa1Length() - 1, 0,
-					last.getCa2Length() - 1);
+			lastMatrix = new GMatrix(last.getCa1Length() - 1, last.getCa2Length() - 1);
+			lastMatrix.copySubMatrix(0, last.getCa1Length() - 1, 0,
+					last.getCa2Length() - 1, 0, 0, lastMatrix);
 		}
 
 		// Extract the structure identifier

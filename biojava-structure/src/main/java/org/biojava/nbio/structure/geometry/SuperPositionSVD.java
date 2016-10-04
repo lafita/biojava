@@ -82,7 +82,7 @@ public class SuperPositionSVD extends SuperPositionAbstract {
 		double[][] coordSet1 = new double[ats1.length][3];
 		double[][] coordSet2 = new double[ats2.length][3];
 
-		// copy the atoms into the internal coords;
+		// copy the points into the internal coords;
 		for (int i = 0; i < ats1.length; i++) {
 			coordSet1[i] = new double[3];
 			ats1[i].get(coordSet1[i]);

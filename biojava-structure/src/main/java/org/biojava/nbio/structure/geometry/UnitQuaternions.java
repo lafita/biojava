@@ -1,6 +1,8 @@
 package org.biojava.nbio.structure.geometry;
 
 import javax.vecmath.AxisAngle4d;
+import javax.vecmath.GMatrix;
+import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
 import javax.vecmath.Quat4d;
 
@@ -177,7 +179,13 @@ public class UnitQuaternions {
 	 *         rotate moved to bring it to the same orientation as fixed.
 	 */
 	public static Quat4d relativeOrientation(Point3d[] fixed, Point3d[] moved) {
-		Matrix m = CalcPoint.formMatrix(moved, fixed); // inverse
+		Matrix4d m4d = CalcPoint.formMatrix(moved, fixed); // inverse order
+		
+		// TODO more efficient calculate eigenvalue on m4d
+		GMatrix gmat = new GMatrix(4,4);
+		gmat.set(m4d);
+		Matrix m = Matrices.vecmathToJama(gmat);
+		
 		EigenvalueDecomposition eig = m.eig();
 		double[][] v = eig.getV().getArray();
 		Quat4d q = new Quat4d(v[1][3], v[2][3], v[3][3], v[0][3]);

@@ -27,6 +27,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+import javax.vecmath.GMatrix;
+
 import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.align.multiple.Block;
@@ -34,7 +36,6 @@ import org.biojava.nbio.structure.align.multiple.MultipleAlignment;
 import org.biojava.nbio.structure.align.multiple.MultipleAlignmentEnsemble;
 import org.biojava.nbio.structure.align.multiple.util.MultipleAlignmentScorer;
 import org.biojava.nbio.structure.align.multiple.util.MultipleAlignmentTools;
-import org.biojava.nbio.structure.jama.Matrix;
 import org.biojava.nbio.structure.symmetry.utils.SymmetryTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -416,7 +417,7 @@ public class SymmOptimizer {
 
 		// Select residue by maximum distance
 		updateMultipleAlignment();
-		Matrix residueDistances = MultipleAlignmentTools
+		GMatrix residueDistances = MultipleAlignmentTools
 				.getAverageResidueDistances(msa);
 
 		double maxDist = Double.MIN_VALUE;
@@ -424,13 +425,13 @@ public class SymmOptimizer {
 		int res = 0;
 		for (int col = 0; col < length; col++) {
 			for (int s = 0; s < order; s++) {
-				if (residueDistances.get(s, col) != -1) {
-					if (residueDistances.get(s, col) > maxDist) {
+				if (residueDistances.getElement(s, col) != -1) {
+					if (residueDistances.getElement(s, col) > maxDist) {
 						// geometric distribution
 						if (rnd.nextDouble() > 0.5) {
 							su = s;
 							res = col;
-							maxDist = residueDistances.get(s, col);
+							maxDist = residueDistances.getElement(s, col);
 						}
 					}
 				}
@@ -781,7 +782,7 @@ public class SymmOptimizer {
 
 		// Select column by maximum distance
 		updateMultipleAlignment();
-		Matrix residueDistances = MultipleAlignmentTools
+		GMatrix residueDistances = MultipleAlignmentTools
 				.getAverageResidueDistances(msa);
 
 		double maxDist = Double.MIN_VALUE;
@@ -790,8 +791,8 @@ public class SymmOptimizer {
 		for (int col = 0; col < length; col++) {
 			int normalize = 0;
 			for (int s = 0; s < order; s++) {
-				if (residueDistances.get(s, col) != -1) {
-					colDistances[col] += residueDistances.get(s, col);
+				if (residueDistances.getElement(s, col) != -1) {
+					colDistances[col] += residueDistances.getElement(s, col);
 					normalize++;
 				}
 			}

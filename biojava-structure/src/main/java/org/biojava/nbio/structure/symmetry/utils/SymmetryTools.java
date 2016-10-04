@@ -29,6 +29,8 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import javax.vecmath.AxisAngle4d;
+import javax.vecmath.GMatrix;
+import javax.vecmath.Matrix3d;
 import javax.vecmath.Matrix4d;
 
 import org.biojava.nbio.structure.Atom;
@@ -58,8 +60,8 @@ import org.biojava.nbio.structure.align.multiple.util.MultipleSuperimposer;
 import org.biojava.nbio.structure.cluster.Subunit;
 import org.biojava.nbio.structure.cluster.SubunitClustererMethod;
 import org.biojava.nbio.structure.cluster.SubunitClustererParameters;
+import org.biojava.nbio.structure.geometry.Matrices;
 import org.biojava.nbio.structure.geometry.SuperPositions;
-import org.biojava.nbio.structure.jama.Matrix;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryDetector;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryParameters;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryResults;
@@ -138,12 +140,12 @@ public class SymmetryTools {
 	 * @param gradientExpCoeff
 	 * @return
 	 */
-	public static Matrix grayOutCEOrig(Atom[] ca2, int rows, int cols,
-			CECalculator calculator, Matrix origM, int blankWindowSize,
+	public static GMatrix grayOutCEOrig(Atom[] ca2, int rows, int cols,
+			CECalculator calculator, GMatrix origM, int blankWindowSize,
 			double[] gradientPolyCoeff, double gradientExpCoeff) {
 
 		if (origM == null) {
-			origM = new Matrix(calculator.getMatMatrix());
+			origM = Matrices.doubleToVecmath(calculator.getMatMatrix());
 		}
 
 		// symmetry hack, disable main diagonal
@@ -152,20 +154,20 @@ public class SymmetryTools {
 			for (int j = 0; j < cols; j++) {
 				int diff = Math.abs(i - j);
 
-				double resetVal = getResetVal(origM.get(i, j), diff,
+				double resetVal = getResetVal(origM.getElement(i, j), diff,
 						gradientPolyCoeff, gradientExpCoeff);
 
 				if (diff < blankWindowSize) {
-					origM.set(i, j, origM.get(i, j) + resetVal);
+					origM.setElement(i, j, origM.getElement(i, j) + resetVal);
 
 				}
 				int diff2 = Math.abs(i - (j - ca2.length / 2)); // other side
 
-				double resetVal2 = getResetVal(origM.get(i, j), diff2,
+				double resetVal2 = getResetVal(origM.getElement(i, j), diff2,
 						gradientPolyCoeff, gradientExpCoeff);
 
 				if (diff2 < blankWindowSize) {
-					origM.set(i, j, origM.get(i, j) + resetVal2);
+					origM.setElement(i, j, origM.getElement(i, j) + resetVal2);
 
 				}
 			}
@@ -173,9 +175,9 @@ public class SymmetryTools {
 		return origM;
 	}
 
-	public static Matrix grayOutPreviousAlignment(AFPChain afpChain,
+	public static GMatrix grayOutPreviousAlignment(AFPChain afpChain,
 			Atom[] ca2, int rows, int cols, CECalculator calculator,
-			Matrix max, int blankWindowSize, double[] gradientPolyCoeff,
+			GMatrix max, int blankWindowSize, double[] gradientPolyCoeff,
 			double gradientExpCoeff) {
 
 		max = grayOutCEOrig(ca2, rows, cols, calculator, max, blankWindowSize,
@@ -209,12 +211,12 @@ public class SymmetryTools {
 					for (int k = 0; k < blankWindowSize / 2; k++) {
 						if (i1 - k >= 0) {
 							double resetVal = getResetVal(
-									max.get(i1 - k, i1 - k), 0,
+									max.getElement(i1 - k, i1 - k), 0,
 									gradientPolyCoeff, gradientExpCoeff);
 							dist1[i1 - k][i1 - k] = resetVal;
 						} else if (i1 + k < rows) {
 							double resetVal = getResetVal(
-									max.get(i1 + k, i1 + k), 0,
+									max.getElement(i1 + k, i1 + k), 0,
 									gradientPolyCoeff, gradientExpCoeff);
 							dist1[i1 + k][i1 + k] = resetVal;
 						}
@@ -222,32 +224,32 @@ public class SymmetryTools {
 					}
 
 					for (int j2 = start2; j2 < end2; j2++) {
-						double resetVal = getResetVal(max.get(i1, j2),
+						double resetVal = getResetVal(max.getElement(i1, j2),
 								Math.abs(i1 - j2), gradientPolyCoeff,
 								gradientExpCoeff);
-						max.set(i1, j2, resetVal);
+						max.setElement(i1, j2, resetVal);
 						if (j2 < breakPoint) {
 							double resetVal2 = getResetVal(
-									max.get(i1, j2 + breakPoint),
+									max.getElement(i1, j2 + breakPoint),
 									Math.abs(i1 - (j2 + breakPoint)),
 									gradientPolyCoeff, gradientExpCoeff);
-							max.set(i1, j2 + breakPoint, resetVal2);
+							max.setElement(i1, j2 + breakPoint, resetVal2);
 						} else {
 							double resetVal2 = getResetVal(
-									max.get(i1, j2 - breakPoint),
+									max.getElement(i1, j2 - breakPoint),
 									Math.abs(i1 - (j2 - breakPoint)),
 									gradientPolyCoeff, gradientExpCoeff);
-							max.set(i1, j2 - breakPoint, resetVal2);
+							max.setElement(i1, j2 - breakPoint, resetVal2);
 						}
 						for (int k = 0; k < blankWindowSize / 2; k++) {
 							if (j2 - k >= 0) {
 								if (j2 - k < breakPoint) {
 									double resetVal2 = getResetVal(
-											max.get(j2 - k, j2 - k), 0,
+											max.getElement(j2 - k, j2 - k), 0,
 											gradientPolyCoeff, gradientExpCoeff);
 									dist2[j2 - k][j2 - k] = resetVal2;
 								} else {
-									double resetVal2 = getResetVal(max.get(j2
+									double resetVal2 = getResetVal(max.getElement(j2
 											- k - breakPoint, j2 - k), 0,
 											gradientPolyCoeff, gradientExpCoeff);
 									dist2[j2 - k - breakPoint][j2 - k
@@ -256,11 +258,11 @@ public class SymmetryTools {
 							} else if (j2 + k < cols) {
 								if (j2 + k < breakPoint) {
 									double resetVal2 = getResetVal(
-											max.get(j2 + k, j2 + k), 0,
+											max.getElement(j2 + k, j2 + k), 0,
 											gradientPolyCoeff, gradientExpCoeff);
 									dist2[j2 + k][j2 + k] = resetVal2;
 								} else {
-									double resetVal2 = getResetVal(max.get(j2
+									double resetVal2 = getResetVal(max.getElement(j2
 											+ k - breakPoint, j2 + k), 0,
 											gradientPolyCoeff, gradientExpCoeff);
 									dist2[j2 + k - breakPoint][j2 + k
@@ -279,10 +281,11 @@ public class SymmetryTools {
 
 	}
 
-	public Matrix getDkMatrix(Atom[] ca1, Atom[] ca2, int fragmentLength,
+	public GMatrix getDkMatrix(Atom[] ca1, Atom[] ca2, int fragmentLength,
 			double[] dist1, double[] dist2, int rows, int cols) {
 
-		Matrix diffDistMax = Matrix.identity(ca1.length, ca2.length);
+		GMatrix diffDistMax = new GMatrix(ca1.length, ca2.length);
+		diffDistMax.setIdentity();
 
 		for (int i = 0; i < rows; i++) {
 			double score1 = 0;
@@ -298,7 +301,7 @@ public class SymmetryTools {
 				// if the intramolecular distances are very similar
 				// the two scores should be similar,
 				// i.e. the difference is close to 0
-				diffDistMax.set(i, j, Math.abs(score1 - score2));
+				diffDistMax.setElement(i, j, Math.abs(score1 - score2));
 			}
 		}
 
@@ -309,11 +312,11 @@ public class SymmetryTools {
 				int diff = Math.abs(i - j);
 
 				if (diff < 15) {
-					diffDistMax.set(i, j, 99);
+					diffDistMax.setElement(i, j, 99);
 				}
 				int diff2 = Math.abs(i - (j - ca2.length / 2));
 				if (diff2 < 15) {
-					diffDistMax.set(i, j, 99);
+					diffDistMax.setElement(i, j, 99);
 				}
 			}
 		}
@@ -321,20 +324,20 @@ public class SymmetryTools {
 
 	}
 
-	public static Matrix blankOutPreviousAlignment(AFPChain afpChain,
+	public static GMatrix blankOutPreviousAlignment(AFPChain afpChain,
 			Atom[] ca2, int rows, int cols, CECalculator calculator,
-			Matrix max, int blankWindowSize) {
+			GMatrix max, int blankWindowSize) {
 		return grayOutPreviousAlignment(afpChain, ca2, rows, cols, calculator,
 				max, blankWindowSize, new double[] { Integer.MIN_VALUE }, 0.0);
 	}
 
-	public static Matrix blankOutCEOrig(Atom[] ca2, int rows, int cols,
-			CECalculator calculator, Matrix origM, int blankWindowSize) {
+	public static GMatrix blankOutCEOrig(Atom[] ca2, int rows, int cols,
+			CECalculator calculator, GMatrix origM, int blankWindowSize) {
 		return grayOutCEOrig(ca2, rows, cols, calculator, origM,
 				blankWindowSize, new double[] { Integer.MIN_VALUE }, 0.0);
 	}
 
-	public static Matrix getDkMatrix(Atom[] ca1, Atom[] ca2, int k,
+	public static GMatrix getDkMatrix(Atom[] ca1, Atom[] ca2, int k,
 			int fragmentLength) {
 
 		double[] dist1 = AlignTools.getDiagonalAtK(ca1, k);
@@ -346,7 +349,7 @@ public class SymmetryTools {
 		// Matrix that tracks similarity of a fragment of length fragmentLength
 		// starting a position i,j.
 
-		Matrix m2 = new Matrix(rows, cols);
+		GMatrix m2 = new GMatrix(rows, cols);
 
 		for (int i = 0; i < rows; i++) {
 			double score1 = 0;
@@ -362,7 +365,7 @@ public class SymmetryTools {
 				// if the intramolecular distances are very similar
 				// the two scores should be similar,
 				// i.e. the difference is close to 0
-				m2.set(i, j, Math.abs(score1 - score2));
+				m2.setElement(i, j, Math.abs(score1 - score2));
 			}
 		}
 		return m2;
@@ -423,8 +426,8 @@ public class SymmetryTools {
 	 * @return
 	 */
 	public static double getAngle(AFPChain afpChain, Atom[] ca1, Atom[] ca2) {
-		Matrix rotation = afpChain.getBlockRotationMatrix()[0];
-		return Math.acos(rotation.trace() - 1) * 180 / Math.PI;
+		Matrix3d rotation = Matrices.getRotationMatrix(afpChain.getBlockTransformation()[0]);
+		return Matrices.getAngle(rotation);
 	}
 
 	/**
