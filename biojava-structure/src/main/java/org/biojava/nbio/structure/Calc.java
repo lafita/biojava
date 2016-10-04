@@ -32,10 +32,9 @@ import javax.vecmath.Vector3d;
 /**
  * Utility operations on Atoms, AminoAcids, Matrices, Point3d, etc.
  * <p>
- * Currently the coordinates of an Atom are stored as an array of size 3
- * (double[3]). It would be more powerful to use Point3d from javax.vecmath.
- * Overloaded methods for Point3d operations exist in the {@link CalcPoint}
- * Class.
+ * Currently the coordinates of an Atom are stored as a Point3d from
+ * javax.vecmath. Overloaded methods for Point3d operations exist in the
+ * {@link CalcPoint} Class.
  *
  * @author Andreas Prlic
  * @author Aleix Lafita
@@ -45,17 +44,19 @@ import javax.vecmath.Vector3d;
 
 public class Calc {
 
-	//private final static Logger logger = LoggerFactory.getLogger(Calc.class);
+	// private final static Logger logger = LoggerFactory.getLogger(Calc.class);
 
 	/**
-	 * calculate distance between two atoms.
+	 * Calculate distance between two atoms.
 	 *
 	 * @param a
 	 *            an Atom object
 	 * @param b
 	 *            an Atom object
 	 * @return a double
+	 * @deprecated Use {@link Point3d#distance(Point3d)}.
 	 */
+	@Deprecated
 	public static final double getDistance(Atom a, Atom b) {
 		double x = a.getX() - b.getX();
 		double y = a.getY() - b.getY();
@@ -77,7 +78,9 @@ public class Calc {
 	 * @param b
 	 *            an Atom object
 	 * @return a double
+	 * @deprecated Use {@link Point3d#distanceSquared(Point3d)}.
 	 */
+	@Deprecated
 	public static double getDistanceFast(Atom a, Atom b) {
 		double x = a.getX() - b.getX();
 		double y = a.getY() - b.getY();
@@ -86,6 +89,15 @@ public class Calc {
 		return x * x + y * y + z * z;
 	}
 
+	/**
+	 * Invert the sign of the Atom coordinates.
+	 * 
+	 * @param a
+	 *            Atom will not be modified
+	 * @return new Atom with inverted coordinate signs.
+	 * @deprecated Use {@link Point3d#negate()}
+	 */
+	@Deprecated
 	public static final Atom invert(Atom a) {
 		double[] coords = new double[] { 0.0, 0.0, 0.0 };
 		Atom zero = new AtomImpl();
@@ -101,7 +113,9 @@ public class Calc {
 	 * @param b
 	 *            an Atom object
 	 * @return an Atom object
+	 * @deprecated Use {@link Point3d#add(Point3d)}
 	 */
+	@Deprecated
 	public static final Atom add(Atom a, Atom b) {
 
 		Atom c = new AtomImpl();
@@ -120,7 +134,9 @@ public class Calc {
 	 * @param b
 	 *            an Atom object
 	 * @return n new Atom object representing the difference
+	 * @deprecated Use {@link Point3d#sub(Point3d)}
 	 */
+	@Deprecated
 	public static final Atom subtract(Atom a, Atom b) {
 		Atom c = new AtomImpl();
 		c.setX(a.getX() - b.getX());
@@ -138,7 +154,9 @@ public class Calc {
 	 * @param b
 	 *            an Atom object
 	 * @return an Atom object
+	 * @deprecated Use {@link Vector3d#cross(Vector3d, Vector3d)}
 	 */
+	@Deprecated
 	public static final Atom vectorProduct(Atom a, Atom b) {
 
 		Atom c = new AtomImpl();
@@ -157,7 +175,9 @@ public class Calc {
 	 * @param b
 	 *            an Atom object
 	 * @return a double
+	 * @deprecated Use {@link Vector3d#dot(Vector3d)}
 	 */
+	@Deprecated
 	public static final double scalarProduct(Atom a, Atom b) {
 		return a.getX() * b.getX() + a.getY() * b.getY() + a.getZ() * b.getZ();
 	}
@@ -168,7 +188,9 @@ public class Calc {
 	 * @param a
 	 *            an Atom object
 	 * @return Square root of the sum of the squared elements
+	 * @deprecated Use {@link Vector3d#length()}
 	 */
+	@Deprecated
 	public static final double amount(Atom a) {
 		return Math.sqrt(scalarProduct(a, a));
 	}
@@ -182,7 +204,9 @@ public class Calc {
 	 *            an Atom object
 	 * @return Angle between a and b in degrees, in range [0,180]. If either
 	 *         vector has length 0 then angle is not defined and NaN is returned
+	 * @deprecated Use Math.toDegrees({@link Vector3d#angle(Vector3d)})
 	 */
+	@Deprecated
 	public static final double angle(Atom a, Atom b) {
 
 		Vector3d va = new Vector3d(a.getCoordsAsPoint3d());
@@ -193,12 +217,14 @@ public class Calc {
 	}
 
 	/**
-	 * Returns the unit vector of vector a .
+	 * Returns the unit vector of vector a.
 	 *
 	 * @param a
 	 *            an Atom object
 	 * @return an Atom object
+	 * @deprecated Use {@link Vector3d#normalize()}
 	 */
+	@Deprecated
 	public static final Atom unitVector(Atom a) {
 		double amount = amount(a);
 
@@ -355,7 +381,7 @@ public class Calc {
 	public static final void rotate(Atom atom, Matrix3d m) {
 		m.transform(atom.getCoordsAsPoint3d());
 	}
-	
+
 	/**
 	 * Rotate an Atom array around a rotation 3x3 Matrix object.
 	 *
@@ -495,16 +521,17 @@ public class Calc {
 	public static final void translate(Atom atom, Vector3d v) {
 		atom.getCoordsAsPoint3d().add(v);
 	}
-	
+
 	/**
 	 * Translates an atom array, given a Vector3d (i.e. the vecmath library
 	 * double-precision 3-d vector)
 	 * 
-	 * @param atoms array of Atoms
+	 * @param atoms
+	 *            array of Atoms
 	 * @param v
 	 */
 	public static final void translate(Atom[] atoms, Vector3d v) {
-		for(Atom a : atoms)
+		for (Atom a : atoms)
 			translate(a, v);
 	}
 
@@ -794,10 +821,10 @@ public class Calc {
 		arr2[2] = amino.getC();
 
 		// ok now we got the two arrays, do a Superposition:
-		Matrix4d transform = SuperPositions.superpose(Calc.atomsToPoints(arr1), 
+		Matrix4d transform = SuperPositions.superpose(Calc.atomsToPoints(arr1),
 				Calc.atomsToPoints(arr2));
 		Calc.transform(aCB, transform);
-		
+
 		aCB.setName("CB");
 
 		return aCB;
@@ -875,8 +902,8 @@ public class Calc {
 	 *            in radians
 	 * @return the rotation matrix
 	 */
-	public static final Matrix3d matrixFromEuler(double heading, double attitude,
-			double bank) {
+	public static final Matrix3d matrixFromEuler(double heading,
+			double attitude, double bank) {
 		// Assuming the angles are in radians.
 		double ch = Math.cos(heading);
 		double sh = Math.sin(heading);
@@ -895,7 +922,7 @@ public class Calc {
 		m.setElement(2, 0, -sh * ca);
 		m.setElement(2, 1, sh * sa * cb + ch * sb);
 		m.setElement(2, 2, -sh * sa * sb + ch * cb);
-		
+
 		return m;
 	}
 
@@ -952,7 +979,7 @@ public class Calc {
 		for (Atom atom : ca)
 			Calc.shift(atom, b);
 	}
-	
+
 	/**
 	 * Extract the translational vector as an Atom of a transformation matrix.
 	 *
