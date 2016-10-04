@@ -26,7 +26,6 @@ import org.biojava.nbio.structure.align.ce.CeCPMain;
 import org.biojava.nbio.structure.align.model.AFP;
 import org.biojava.nbio.structure.align.model.AFPChain;
 import org.biojava.nbio.structure.align.util.AFPAlignmentDisplay;
-import org.biojava.nbio.structure.jama.Matrix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -36,6 +35,9 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import javax.vecmath.Matrix3d;
+import javax.vecmath.Matrix4d;
+import javax.vecmath.Vector3d;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -310,10 +312,8 @@ public class AFPChainXMLParser
 				}
 				a.setCalculationTime(calcTime);
 
-				Matrix[] ms = new Matrix[a.getBlockNum()];
-				a.setBlockRotationMatrix(ms);
-				Atom[] blockShiftVector = new Atom[a.getBlockNum()];
-				a.setBlockShiftVector(blockShiftVector);
+				Matrix4d[] tr = new Matrix4d[a.getBlockNum()];
+				a.setBlockTransformation(tr);
 
 				int afpNum = Integer.parseInt(getAttribute(rootElement,"afpNum"));
 				List<AFP> afpSet = new ArrayList<AFP>();
@@ -395,8 +395,8 @@ public class AFPChainXMLParser
 		double[]  blockRmsd = a.getBlockRmsd();
 		if (blockRmsd == null )
 			blockRmsd = new double[blockNum];
-		Matrix[] ms     = a.getBlockRotationMatrix();
-		Atom[] shifts = a.getBlockShiftVector();
+		
+		Matrix4d[] tr = a.getBlockTransformation();
 
 		int blockNr = Integer.parseInt( map.getNamedItem("blockNr").getTextContent());
 
@@ -447,28 +447,24 @@ public class AFPChainXMLParser
 				 */
 			} else if ( eqr.getNodeName().equals("matrix")){
 				// process Matrix
-				Matrix m = new Matrix(3,3);
+				Matrix3d m = new Matrix3d();
 
 				for (int i =1 ; i <= 3 ; i++){
 					for (int j =1 ; j <= 3 ; j++){
 						String att = getAttribute(eqr, "mat" +i + j);
 						double val = Double.parseDouble(att);
-						m.set(i-1,j-1,val);
+						m.setElement(i-1,j-1,val);
 
 					}
 				}
-				ms[blockNr] = m;
+				tr[blockNr].setRotation(m);
 
 			} else if ( eqr.getNodeName().equals("shift")){
-				Atom shift = new AtomImpl();
 				double x = Double.parseDouble(getAttribute(eqr, "x"));
 				double y = Double.parseDouble(getAttribute(eqr, "y"));
 				double z = Double.parseDouble(getAttribute(eqr, "z"));
-				shift.setX(x);
-				shift.setY(y);
-				shift.setZ(z);
-				shifts[blockNr] = shift;
-
+				Vector3d v = new Vector3d(x, y, z);
+				tr[blockNr].setTranslation(v);
 			}
 
 		}

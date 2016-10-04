@@ -24,14 +24,12 @@ import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.align.model.AFPChain;
 import org.biojava.nbio.structure.align.util.AlignmentTools;
-import org.biojava.nbio.structure.jama.Matrix;
 import org.biojava.nbio.core.util.PrettyXMLWriter;
 
+import javax.vecmath.Matrix4d;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-
-
 
 public class AFPChainXMLConverter {
 
@@ -197,30 +195,27 @@ public class AFPChainXMLConverter {
 	private static void printXMLMatrixShift(PrettyXMLWriter xml,
 			AFPChain afpChain, int blockNr)  throws IOException {
 
-		Matrix[] ms     = afpChain.getBlockRotationMatrix();
-		if ( ms == null || ms.length == 0)
+		Matrix4d[] tr = afpChain.getBlockTransformation();
+		if ( tr == null || tr.length == 0)
 			return;
 
-		Matrix matrix = ms[blockNr];
+		Matrix4d matrix = tr[blockNr];
 		if ( matrix == null)
 			return;
 		xml.openTag("matrix");
 
-
 		for (int x=0;x<3;x++){
 			for (int y=0;y<3;y++){
 				String key = "mat"+(x+1)+(y+1);
-				xml.attribute(key,String.format("%.6f",matrix.get(x,y)));
+				xml.attribute(key,String.format("%.6f",matrix.getElement(x,y)));
 			}
 		}
 		xml.closeTag("matrix");
 
-		Atom[]   shifts = afpChain.getBlockShiftVector();
-		Atom shift = shifts[blockNr];
 		xml.openTag("shift");
-		xml.attribute("x", String.format("%.3f",shift.getX()));
-		xml.attribute("y", String.format("%.3f",shift.getY()));
-		xml.attribute("z", String.format("%.3f",shift.getZ()));
+		xml.attribute("x", String.format("%.3f",matrix.m03));
+		xml.attribute("y", String.format("%.3f",matrix.m13));
+		xml.attribute("z", String.format("%.3f",matrix.m23));
 		xml.closeTag("shift");
 
 	}

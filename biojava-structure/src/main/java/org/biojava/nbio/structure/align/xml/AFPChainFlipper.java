@@ -24,11 +24,10 @@
 
 package org.biojava.nbio.structure.align.xml;
 
-import org.biojava.nbio.structure.Atom;
-import org.biojava.nbio.structure.Calc;
+import javax.vecmath.Matrix4d;
+
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.align.model.AFPChain;
-import org.biojava.nbio.structure.jama.Matrix;
 
 public class AFPChainFlipper {
 
@@ -119,35 +118,22 @@ public class AFPChainFlipper {
 
 		// change direction of the Matrix and shift!
 		//
-		Matrix[] maxO  = o.getBlockRotationMatrix();
-		Matrix[] maxN = new Matrix[maxO.length];
+		Matrix4d[] maxO  = o.getBlockTransformation();
+		Matrix4d[] maxN = new Matrix4d[maxO.length];
 
 		int i = -1;
 
-		Atom[] shiftO = o.getBlockShiftVector();
-		Atom[] shiftN = new Atom[shiftO.length];
-
-		for (Matrix m : maxO){
+		for (Matrix4d m : maxO){
 			i++;
 			if ( m == null) {
 				// alignment too short probably
 				continue;
 			}
-
-			Matrix mnew = m ;
-			Atom a = shiftO[i];
-
-			maxN[i] = mnew.transpose();
-
-			shiftN[i] =  Calc.invert(a);
-
-			Calc.rotate(shiftN[i],maxN[i]);
-
-
+			maxN[i] = new Matrix4d(m);
+			maxN[i].invert();
 		}
 
-		n.setBlockRotationMatrix(maxN);
-		n.setBlockShiftVector(shiftN);
+		n.setBlockTransformation(maxN);
 		return n;
 
 	}
