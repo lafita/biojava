@@ -35,9 +35,7 @@ import org.biojava.nbio.structure.align.model.AFPChain;
 import org.biojava.nbio.structure.align.util.AtomCache;
 import org.biojava.nbio.structure.align.xml.AFPChainXMLConverter;
 import org.biojava.nbio.structure.align.xml.AFPChainXMLParser;
-import org.biojava.nbio.structure.geometry.Matrices;
 import org.biojava.nbio.structure.geometry.SuperPositions;
-import org.biojava.nbio.structure.jama.Matrix;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -80,8 +78,8 @@ public class TestFlexibleRotationMatrices extends TestCase{
 			//System.out.println(xml);
 			AFPChain newChain = AFPChainXMLParser.fromXML (xml, ca1, ca3);
 
-			Matrix[] maxs1 = afpChain.getBlockRotationMatrix();
-			//Atom[] shifts1 = afpChain.getBlockShiftVector();
+			Matrix4d[] maxs1 = afpChain.getBlockTransformation();
+
 			double[] blockRmsd = afpChain.getBlockRmsd();
 
 			assertTrue( afpChain.getBlockNum() == newChain.getBlockNum());
@@ -89,8 +87,7 @@ public class TestFlexibleRotationMatrices extends TestCase{
 			// make sure the XML conversion worked OK.
 			for ( int i = 0 ; i < newChain.getBlockNum();i++) {
 
-				assertTrue(compareMatrices(maxs1[i],newChain.getBlockRotationMatrix()[i]));
-				//assertTrue(compareVectors(shifts1[i],newChain.getBlockShiftVector()[i]));
+				assertTrue(compareMatrices(maxs1[i],newChain.getBlockTransformation()[i]));
 				assertTrue(compareRmsd(blockRmsd[i], newChain.getBlockRmsd()[i]) );
 			}
 
@@ -154,8 +151,7 @@ public class TestFlexibleRotationMatrices extends TestCase{
 	  // Matrix[] maxs1 = afpChain.getBlockRotationMatrix();
 	  // Atom[] shifts1 = afpChain.getBlockShiftVector();
 
-		Matrix[] maxs2 = newChain.getBlockRotationMatrix();
-		Atom[] shifts2 = newChain.getBlockShiftVector();
+		Matrix4d[] maxs2 = newChain.getBlockTransformation();
 
 		// get the eqr atoms of block X:
 		int[] optLen =afpChain.getOptLen();
@@ -191,10 +187,8 @@ public class TestFlexibleRotationMatrices extends TestCase{
 		// rotate group 2...
 		for ( Atom a : blockSet2){
 			for ( int i =0 ; i<= blockNr;i++ ) {
-				Matrix max   = maxs2[  i];
-				Atom   shift = shifts2[i];
-				Calc.rotate(a, max);
-				Calc.shift( a, shift);
+				Matrix4d max   = maxs2[i];
+				Calc.transform(a, max);
 			}
 		}
 		// calc RMSD
@@ -213,25 +207,20 @@ public class TestFlexibleRotationMatrices extends TestCase{
 				Calc.atomsToPoints(blockSet2copy));
 
 		//double rmsdForce = SVDSuperimposer.getRMS(atomSet1, atomSet2);
-		Matrix m = Matrices.getRotationJAMA(transform);
-		Atom   s  = Calc.getTranslationVector(transform);
 
-		Matrix max   = maxs2[blockNr];
-		Atom   shift = shifts2[blockNr];
+		Matrix4d max   = maxs2[blockNr];
 
-		compareMatrices(max, m);
+		compareMatrices(max, transform);
 
 
 		if ( blockNr == 0) {
-		  compareVectors(shift, s);
+		  // do nothing
 		} else {
 		  System.err.println("Not testing shift vectors for blocks > 1. There is still a problem...");
-
 		}
 
 		for ( Atom a : ca2Copy2){
-			Calc.rotate(a, m);
-			Calc.shift( a, s);
+			Calc.transform(a, transform);
 		}
 		double rmsd3 = Calc.rmsd(blockSet1,blockSet2copy);
 
@@ -258,7 +247,7 @@ public class TestFlexibleRotationMatrices extends TestCase{
 
 	}
 
-	private boolean compareMatrices(Matrix matrix1, Matrix matrix2) {
+	private boolean compareMatrices(Matrix4d matrix1, Matrix4d matrix2) {
 
 		String m1 = matrix1.toString();
 		String m2 = matrix2.toString();

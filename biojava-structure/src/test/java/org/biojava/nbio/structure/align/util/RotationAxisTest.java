@@ -47,63 +47,62 @@
  */
 package org.biojava.nbio.structure.align.util;
 
-import org.biojava.nbio.structure.Atom;
-import org.biojava.nbio.structure.AtomImpl;
 import org.junit.Test;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
+
+import javax.vecmath.Point3d;
+import javax.vecmath.Vector3d;
 
 /**
- * @author blivens
- *
+ * Test the Rotation Axis.
+ * 
+ * @author Spencer Bliven
  */
 public class RotationAxisTest {
 
 	@Test
-	public void testProjection() throws Exception{
+	public void testProjection() throws Exception {
+		
 		RotationAxis axis;
-		Atom dir,pos,projected;
-
-		dir = new AtomImpl();
-		pos = new AtomImpl();
-
+		
 		// 180 around z
-		dir.setCoords( new double[] {0,0,1});
-		pos.setCoords( new double[] {0,0,0} );
+		Vector3d dir = new Vector3d(0,0,1);
+		Point3d pos = new Point3d(0,0,0);
+		
 		axis = new RotationAxis(dir, pos, Math.PI);
 
-		pos.setCoords( new double[] {1,2,3});
-		projected = axis.getProjectedPoint(pos);
-		assertArrayEquals(new double[] {0,0,3},projected.getCoords(),1e-14);
+		pos.set(1,2,3);
+		Point3d projected = axis.getProjectedPoint(pos);
+		assertTrue(new Point3d(0,0,3).epsilonEquals(projected, 1e-14));
 
 		double dist = axis.getProjectedDistance(pos);
 		assertEquals(Math.sqrt(5),dist,1e-14);
 
 
 		// main diagonal through (1,1,0)
-		dir.setCoords( new double[] {2,2,2});
-		pos.setCoords( new double[] {1,1,0});
+		dir.set(2,2,2);
+		pos.set(1,1,0);
 		axis = new RotationAxis(dir, pos, Math.PI);
 
-		pos.setCoords( new double[] {1,1,0});
+		pos.set(1,1,0);
 		projected = axis.getProjectedPoint(pos);
-		assertArrayEquals(new double[] {1,1,0},projected.getCoords(),1e-14);
+		assertTrue(new Point3d(1,1,0).epsilonEquals(projected, 1e-14));
 
-		pos.setCoords( new double[] {0,0,-1});
+		pos.set(0,0,-1);
 		projected = axis.getProjectedPoint(pos);
-		assertArrayEquals(new double[] {0,0,-1},projected.getCoords(),1e-14);
+		assertTrue(new Point3d(0,0,-1).epsilonEquals(projected, 1e-14));
 
-		pos.setCoords( new double[] {-.5,-.5,0});
+		pos.set(-.5,-.5,0);
 		projected = axis.getProjectedPoint(pos);
-		assertArrayEquals(new double[] {0,0,-1},projected.getCoords(),1e-14);
+		assertTrue(new Point3d(0,0,-1).epsilonEquals(projected, 1e-14));
 
 		dist = axis.getProjectedDistance(pos);
 		assertEquals(Math.sqrt(3/2.),dist,1e-14);
 
-		pos.setCoords( new double[] {0,0,0});
+		pos.set(0,0,0);
 		projected = axis.getProjectedPoint(pos);
-		assertArrayEquals(new double[] {1/3.,1/3.,-2/3.},projected.getCoords(),1e-14);
+		assertTrue(new Point3d(1/3.,1/3.,-2/3.).epsilonEquals(projected, 1e-14));
 
 	}
 

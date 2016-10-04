@@ -457,13 +457,21 @@ public class AFPChainXMLParser
 
 					}
 				}
+				if (tr[blockNr] == null)
+					tr[blockNr] = new Matrix4d();
+				
 				tr[blockNr].setRotation(m);
 
 			} else if ( eqr.getNodeName().equals("shift")){
+				
 				double x = Double.parseDouble(getAttribute(eqr, "x"));
 				double y = Double.parseDouble(getAttribute(eqr, "y"));
 				double z = Double.parseDouble(getAttribute(eqr, "z"));
 				Vector3d v = new Vector3d(x, y, z);
+				
+				if (tr[blockNr] == null)
+					tr[blockNr] = new Matrix4d();
+				
 				tr[blockNr].setTranslation(v);
 			}
 

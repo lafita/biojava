@@ -37,6 +37,7 @@ import org.biojava.nbio.structure.align.webstart.AligUIManager;
 import org.biojava.nbio.structure.gui.util.color.ColorUtils;
 
 import javax.swing.*;
+import javax.vecmath.GMatrix;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -553,7 +554,7 @@ public class StructureAlignmentJmol extends AbstractAlignmentJmol {
 	}
 
 	@Override
-	public List<Matrix> getDistanceMatrices() {
+	public List<GMatrix> getDistanceMatrices() {
 		if (afpChain == null) return null;
 		else return Arrays.asList(afpChain.getDisTable1(), afpChain.getDisTable2());
 	}

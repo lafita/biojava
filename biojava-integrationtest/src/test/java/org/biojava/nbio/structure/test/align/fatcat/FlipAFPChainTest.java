@@ -41,9 +41,12 @@ import org.biojava.nbio.structure.align.util.AtomCache;
 import org.biojava.nbio.structure.align.xml.AFPChainFlipper;
 import org.biojava.nbio.structure.align.xml.AFPChainXMLConverter;
 import org.biojava.nbio.structure.align.xml.AFPChainXMLParser;
-import org.biojava.nbio.structure.jama.Matrix;
+import org.biojava.nbio.structure.geometry.Matrices;
 
 import java.io.IOException;
+
+import javax.vecmath.Matrix4d;
+import javax.vecmath.Vector3d;
 
 public class FlipAFPChainTest extends TestCase {
 
@@ -119,10 +122,10 @@ public class FlipAFPChainTest extends TestCase {
 
 		assertTrue("The nr. of equivalent positions is not equal!", afpChain.getNrEQR() == origFlip.getNrEQR());
 
-		Atom shift1 = afpChain.getBlockShiftVector()[0];
-		Atom shift2 = origFlip.getBlockShiftVector()[0];
+		Vector3d shift1 = Matrices.getTranslationVector(afpChain.getBlockTransformation()[0]);
+		Vector3d shift2 = Matrices.getTranslationVector(origFlip.getBlockTransformation()[0]);
 
-		assertTrue("The shift vectors are not similar!", Calc.getDistance(shift1, shift2) < 0.1);
+		assertTrue("The shift vectors are not similar!", shift1.dot(shift2) < 0.1);
 
 		//assert the RMSD in the flipped alignment is small
 		double rmsd1 = getRMSD(afpChain,ca1,ca2);
@@ -186,16 +189,14 @@ public class FlipAFPChainTest extends TestCase {
 
 		for(int bk = 0; bk < blockNum; bk ++)       {
 
-			Matrix m= afpChain.getBlockRotationMatrix()[bk];
-			Atom shift = afpChain.getBlockShiftVector()[bk];
+			Matrix4d m= afpChain.getBlockTransformation()[bk];
+
 			for ( int i=0;i< optLen[bk];i++){
 				int pos = optAln[bk][1][i];
 				Atom a = ca2[pos];
 
-				Calc.rotate(a, m);
-				Calc.shift(a, shift);
+				Calc.transform(a, m);
 
-				//atoms.add(ca2[pos]);
 			}
 
 		}

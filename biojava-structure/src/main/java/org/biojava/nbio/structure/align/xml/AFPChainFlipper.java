@@ -24,10 +24,13 @@
 
 package org.biojava.nbio.structure.align.xml;
 
+import javax.vecmath.Matrix3d;
 import javax.vecmath.Matrix4d;
+import javax.vecmath.Vector3d;
 
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.align.model.AFPChain;
+import org.biojava.nbio.structure.geometry.Matrices;
 
 public class AFPChainFlipper {
 
@@ -129,8 +132,16 @@ public class AFPChainFlipper {
 				// alignment too short probably
 				continue;
 			}
-			maxN[i] = new Matrix4d(m);
-			maxN[i].invert();
+			Matrix3d rot = Matrices.getRotationMatrix(m);
+			Vector3d tra = Matrices.getTranslationVector(m);
+			
+			maxN[i] = new Matrix4d();
+			maxN[i].setRotation(rot);
+			
+			tra.negate();
+			rot.transform(tra);
+			
+			maxN[i].setTranslation(tra);
 		}
 
 		n.setBlockTransformation(maxN);

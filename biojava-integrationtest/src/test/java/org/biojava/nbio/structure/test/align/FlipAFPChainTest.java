@@ -37,9 +37,10 @@ import org.biojava.nbio.structure.align.util.AtomCache;
 import org.biojava.nbio.structure.align.xml.AFPChainFlipper;
 import org.biojava.nbio.structure.align.xml.AFPChainXMLConverter;
 import org.biojava.nbio.structure.align.xml.AFPChainXMLParser;
-import org.biojava.nbio.structure.jama.Matrix;
 
 import java.io.IOException;
+
+import javax.vecmath.Matrix4d;
 
 public class FlipAFPChainTest extends TestCase {
 
@@ -165,16 +166,11 @@ public class FlipAFPChainTest extends TestCase {
 
 		for(int bk = 0; bk < blockNum; bk ++)       {
 
-			Matrix m= afpChain.getBlockRotationMatrix()[bk];
-			Atom shift = afpChain.getBlockShiftVector()[bk];
+			Matrix4d m = afpChain.getBlockTransformation()[bk];
 			for ( int i=0;i< optLen[bk];i++){
 				int pos = optAln[bk][1][i];
 				Atom a = ca2[pos];
-
-				Calc.rotate(a, m);
-				Calc.shift(a, shift);
-
-				//atoms.add(ca2[pos]);
+				Calc.transform(a, m);
 			}
 
 		}
