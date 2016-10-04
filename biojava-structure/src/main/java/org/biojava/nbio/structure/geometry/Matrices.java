@@ -193,5 +193,17 @@ public class Matrices {
 
 		return X;
 	}
+	
+	/**
+	 * Calculate the rotation angle for a given rotation matrix.
+	 * 
+	 * @param rotation
+	 *            Rotation matrix
+	 * @return the rotation angle, in radians
+	 */
+	public static double getAngle(Matrix3d rotation) {
+		double c = (rotation.m00 + rotation.m11 + rotation.m22 - 1) / 2.0; // =cos(theta)
+		return Math.acos(c);
+	}
 
 }

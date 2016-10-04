@@ -21,7 +21,6 @@
 package org.biojava.nbio.structure.align.util;
 
 import org.biojava.nbio.structure.Atom;
-import org.biojava.nbio.structure.AtomImpl;
 import org.biojava.nbio.structure.Calc;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.align.model.AFPChain;
@@ -458,49 +457,51 @@ public final class RotationAxis {
 	 * @param atoms
 	 * @return two points defining the axis segment
 	 */
-	public Pair<Atom> getAxisEnds(Atom[] atoms) {
+	public Pair<Point3d> getAxisEnds(Atom[] atoms) {
+		
 		// Project each Atom onto the rotation axis to determine limits
 		double min, max;
-		min = max = Calc.scalarProduct(rotationAxis, atoms[0]);
+		min = max = rotationAxis.dot(new Vector3d(atoms[0].getCoordsAsPoint3d()));
 		for (int i = 1; i < atoms.length; i++) {
-			double prod = Calc.scalarProduct(rotationAxis, atoms[i]);
+			double prod = rotationAxis.dot(new Vector3d(atoms[i].getCoordsAsPoint3d()));
 			if (prod < min)
 				min = prod;
 			if (prod > max)
 				max = prod;
 		}
-		double uLen = Calc.scalarProduct(rotationAxis, rotationAxis);// Should
-																		// be 1,
-																		// but
-																		// double
-																		// check
+		double uLen = rotationAxis.dot(rotationAxis);// Should be 1
+		
 		min /= uLen;
 		max /= uLen;
 
 		// Project the origin onto the axis. If the axis is undefined, use the
 		// center of mass
 		Point3d axialPt;
+		
 		if (rotationPos == null) {
-			Atom center = Calc.centerOfMass(atoms);
+			
+			Point3d center = Calc.centerOfMass(atoms).getCoordsAsPoint3d();
 
 			// Project center onto the axis
-			Atom centerOnAxis = Calc.scale(rotationAxis,
-					Calc.scalarProduct(center, rotationAxis));
+			Point3d centerOnAxis = new Point3d();
+			centerOnAxis.scale(rotationAxis.dot(new Vector3d(center)),rotationAxis);
 
 			// Remainder is projection of origin onto axis
-			axialPt = Calc.subtract(center, centerOnAxis);
+			axialPt = new Point3d();
+			axialPt.sub(center, centerOnAxis);
 
 		} else {
 			axialPt = rotationPos;
 		}
 
 		// Find end points of the rotation axis to display
-		Point3d axisMin = (Atom) axialPt.clone();
-		Calc.scaleAdd(min, rotationAxis, axisMin);
-		Point3d axisMax = (Atom) axialPt.clone();
-		Calc.scaleAdd(max, rotationAxis, axisMax);
+		Point3d axisMin = new Point3d(axialPt);
+		axisMin.scaleAdd(min, rotationAxis, axisMin);
 
-		return new Pair<>(axisMin, axisMax);
+		Point3d axisMax = new Point3d(axialPt);
+		axisMax.scaleAdd(max, rotationAxis, axisMax);
+
+		return new Pair<Point3d>(axisMin, axisMax);
 	}
 
 	/**
@@ -541,26 +542,26 @@ public final class RotationAxis {
 		// draw axis of rotation
 		result.append(String.format("draw ID rot" + axisID
 				+ " CYLINDER {%f,%f,%f} {%f,%f,%f} WIDTH %f COLOR %s ;",
-				axisMin.getX(), axisMin.getY(), axisMin.getZ(), axisMax.getX(),
-				axisMax.getY(), axisMax.getZ(), width, axisColor));
+				axisMin.x, axisMin.y, axisMin.z, axisMax.x,
+				axisMax.y, axisMax.z, width, axisColor));
 
 		// draw screw component
-		boolean positiveScrew = Math.signum(rotationAxis.getX()) == Math
-				.signum(screwTranslation.getX());
+		boolean positiveScrew = Math.signum(rotationAxis.x) == Math
+				.signum(screwTranslation.x);
 		if (positiveScrew) {
 			// screw is in the same direction as the axis
 			result.append(String.format("draw ID screw" + axisID
 					+ " VECTOR {%f,%f,%f} {%f,%f,%f} WIDTH %f COLOR %s ;",
-					axisMax.getX(), axisMax.getY(), axisMax.getZ(),
-					screwTranslation.getX(), screwTranslation.getY(),
-					screwTranslation.getZ(), width, screwColor));
+					axisMax.x, axisMax.y, axisMax.z,
+					screwTranslation.x, screwTranslation.y,
+					screwTranslation.z, width, screwColor));
 		} else {
 			// screw is in the opposite direction as the axis
 			result.append(String.format("draw ID screw" + axisID
 					+ " VECTOR {%f,%f,%f} {%f,%f,%f} WIDTH %f COLOR %s ;",
-					axisMin.getX(), axisMin.getY(), axisMin.getZ(),
-					screwTranslation.getX(), screwTranslation.getY(),
-					screwTranslation.getZ(), width, screwColor));
+					axisMin.x, axisMin.y, axisMin.z,
+					screwTranslation.x, screwTranslation.y,
+					screwTranslation.z, width, screwColor));
 		}
 
 		// draw angle of rotation
@@ -570,17 +571,10 @@ public final class RotationAxis {
 					.format("draw ID rotArc"
 							+ axisID
 							+ " ARC {%f,%f,%f} {%f,%f,%f} {0,0,0} {0,%f,%d} SCALE 500 DIAMETER %f COLOR %s;",
-							axisMin.getX(), axisMin.getY(), axisMin.getZ(),
-							axisMax.getX(), axisMax.getY(), axisMax.getZ(),
-							Math.toDegrees(theta), positiveScrew ? 0 : 1, // draw
-																			// at
-																			// the
-																			// opposite
-																			// end
-																			// from
-																			// the
-																			// screw
-																			// arrow
+							axisMin.x, axisMin.y, axisMin.z,
+							axisMax.x, axisMax.y, axisMax.z,
+							Math.toDegrees(theta), positiveScrew ? 0 : 1, 
+							// draw at the opposite end from the screw arrow
 							width, axisColor));
 		}
 
@@ -591,20 +585,22 @@ public final class RotationAxis {
 	 * Projects a given point onto the axis of rotation
 	 * 
 	 * @param point
-	 * @return An atom which lies on the axis, or null if the RotationAxis is
+	 * @return A point which lies on the axis, or null if the RotationAxis is
 	 *         purely translational
 	 */
-	public Atom getProjectedPoint(Point3d point) {
+	public Point3d getProjectedPoint(Point3d point) {
 		if (rotationPos == null) {
 			// translation only
 			return null;
 		}
 
-		Point3d localPoint = Calc.subtract(point, rotationPos);
-		double dot = Calc.scalarProduct(localPoint, rotationAxis);
+		Vector3d localPoint = new Vector3d();
+		localPoint.sub(point, rotationPos);
 
-		Point3d localProjected = Calc.scale(rotationAxis, dot);
-		Point3d projected = Calc.add(localProjected, rotationPos);
+		Point3d projected = new Point3d();
+		projected.scale(localPoint.dot(rotationAxis), rotationAxis);
+		projected.add(rotationPos);
+		
 		return projected;
 	}
 
@@ -616,33 +612,36 @@ public final class RotationAxis {
 	 *         translational
 	 */
 	public double getProjectedDistance(Point3d point) {
+		
 		Point3d projected = getProjectedPoint(point);
 		if (projected == null) {
 			// translation only
 			return Double.NaN;
 		}
 
-		return Calc.getDistance(point, projected);
+		return point.distance(projected);
 
 	}
 
 	public void rotate(Atom[] atoms, double theta) {
-		Matrix rot = getRotationMatrix(theta);
+		
+		Matrix3d rot = getRotationMatrix(theta);
 		if (rotationPos == null) {
 			// Undefined rotation axis; do nothing
 			return;
 		}
-		Point3d negPos;
+		
+		Vector3d negPos = new Vector3d();
+		negPos.negate(rotationPos);
 
-		negPos = Calc.invert(rotationPos);
-
-		for (Atom a : atoms) {
-			Calc.shift(a, negPos);
-		}
+		for (Atom a : atoms)
+			Calc.translate(a, negPos);
+		
 		Calc.rotate(atoms, rot);
-		for (Atom a : atoms) {
-			Calc.shift(a, rotationPos);
-		}
+		
+		for (Atom a : atoms)
+			Calc.translate(a, new Vector3d(rotationPos));
+		
 	}
 
 	/**
@@ -656,28 +655,19 @@ public final class RotationAxis {
 	 *             If the alignment doesn't have a rotation matrix set
 	 */
 	public static double getAngle(AFPChain afpChain) throws StructureException {
+		
 		if (afpChain.getBlockNum() < 1) {
 			throw new StructureException("No aligned residues");
 		}
-		Matrix rotation = afpChain.getBlockRotationMatrix()[0];
+		
+		Matrix4d transformation = afpChain.getBlockTransformation()[0];
 
-		if (rotation == null) {
+		if (transformation == null) {
 			throw new NullPointerException(
 					"AFPChain does not contain a rotation matrix");
 		}
-		return getAngle(rotation);
-	}
-
-	/**
-	 * Calculate the rotation angle for a given matrix
-	 * 
-	 * @param rotation
-	 *            Rotation matrix
-	 * @return The angle, in radians
-	 */
-	public static double getAngle(Matrix rotation) {
-		double c = (rotation.trace() - 1) / 2.0; // =cos(theta)
-		return Math.acos(c);
+		
+		return Matrices.getAngle(Matrices.getRotationMatrix(transformation));
 	}
 
 	/**
