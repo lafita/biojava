@@ -43,7 +43,7 @@ public class TestMultipleAlignmentEnsemble {
 	 * object.
 	 */
 	@Test
-	public static void testAFPconversion() {
+	public void testAFPconversion() {
 
 		// Fill an AFPChain with the general information
 		AFPChain afp = new AFPChain("algorithm");
