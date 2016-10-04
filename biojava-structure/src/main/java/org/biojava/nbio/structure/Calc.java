@@ -54,9 +54,8 @@ public class Calc {
 	 * @param b
 	 *            an Atom object
 	 * @return a double
-	 * @deprecated Use {@link Point3d#distance(Point3d)}.
+	 * @see Point3d#distance(Point3d)
 	 */
-	@Deprecated
 	public static final double getDistance(Atom a, Atom b) {
 		double x = a.getX() - b.getX();
 		double y = a.getY() - b.getY();
@@ -78,9 +77,8 @@ public class Calc {
 	 * @param b
 	 *            an Atom object
 	 * @return a double
-	 * @deprecated Use {@link Point3d#distanceSquared(Point3d)}.
+	 * @see Point3d#distanceSquared(Point3d)
 	 */
-	@Deprecated
 	public static double getDistanceFast(Atom a, Atom b) {
 		double x = a.getX() - b.getX();
 		double y = a.getY() - b.getY();
@@ -95,9 +93,8 @@ public class Calc {
 	 * @param a
 	 *            Atom will not be modified
 	 * @return new Atom with inverted coordinate signs.
-	 * @deprecated Use {@link Point3d#negate()}
+	 * @see Point3d#negate()
 	 */
-	@Deprecated
 	public static final Atom invert(Atom a) {
 		double[] coords = new double[] { 0.0, 0.0, 0.0 };
 		Atom zero = new AtomImpl();
@@ -113,9 +110,8 @@ public class Calc {
 	 * @param b
 	 *            an Atom object
 	 * @return an Atom object
-	 * @deprecated Use {@link Point3d#add(Point3d)}
+	 * @see Point3d#add(Point3d)
 	 */
-	@Deprecated
 	public static final Atom add(Atom a, Atom b) {
 
 		Atom c = new AtomImpl();
@@ -134,9 +130,8 @@ public class Calc {
 	 * @param b
 	 *            an Atom object
 	 * @return n new Atom object representing the difference
-	 * @deprecated Use {@link Point3d#sub(Point3d)}
+	 * @see Point3d#sub(Point3d)
 	 */
-	@Deprecated
 	public static final Atom subtract(Atom a, Atom b) {
 		Atom c = new AtomImpl();
 		c.setX(a.getX() - b.getX());
@@ -154,9 +149,8 @@ public class Calc {
 	 * @param b
 	 *            an Atom object
 	 * @return an Atom object
-	 * @deprecated Use {@link Vector3d#cross(Vector3d, Vector3d)}
+	 * @see Vector3d#cross(Vector3d, Vector3d)
 	 */
-	@Deprecated
 	public static final Atom vectorProduct(Atom a, Atom b) {
 
 		Atom c = new AtomImpl();
@@ -175,9 +169,8 @@ public class Calc {
 	 * @param b
 	 *            an Atom object
 	 * @return a double
-	 * @deprecated Use {@link Vector3d#dot(Vector3d)}
+	 * @see Vector3d#dot(Vector3d)
 	 */
-	@Deprecated
 	public static final double scalarProduct(Atom a, Atom b) {
 		return a.getX() * b.getX() + a.getY() * b.getY() + a.getZ() * b.getZ();
 	}
@@ -188,9 +181,8 @@ public class Calc {
 	 * @param a
 	 *            an Atom object
 	 * @return Square root of the sum of the squared elements
-	 * @deprecated Use {@link Vector3d#length()}
+	 * @see Vector3d#length()
 	 */
-	@Deprecated
 	public static final double amount(Atom a) {
 		return Math.sqrt(scalarProduct(a, a));
 	}
@@ -204,9 +196,8 @@ public class Calc {
 	 *            an Atom object
 	 * @return Angle between a and b in degrees, in range [0,180]. If either
 	 *         vector has length 0 then angle is not defined and NaN is returned
-	 * @deprecated Use Math.toDegrees({@link Vector3d#angle(Vector3d)})
+	 * @see @link Vector3d#angle(Vector3d)
 	 */
-	@Deprecated
 	public static final double angle(Atom a, Atom b) {
 
 		Vector3d va = new Vector3d(a.getCoordsAsPoint3d());
@@ -222,9 +213,8 @@ public class Calc {
 	 * @param a
 	 *            an Atom object
 	 * @return an Atom object
-	 * @deprecated Use {@link Vector3d#normalize()}
+	 * @see Vector3d#normalize()
 	 */
-	@Deprecated
 	public static final Atom unitVector(Atom a) {
 		double amount = amount(a);
 
