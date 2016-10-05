@@ -23,14 +23,13 @@
  */
 package org.biojava.nbio.structure.align.ce;
 
-//import static org.junit.Assert.*;
-
-import junit.framework.TestCase;
 import org.biojava.nbio.structure.*;
 import org.biojava.nbio.structure.align.model.AFPChain;
 import org.biojava.nbio.structure.align.util.AtomCache;
 import org.biojava.nbio.structure.io.PDBParseException;
 import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -41,7 +40,7 @@ import java.util.Arrays;
  * @author Spencer Bliven
  *
  */
-public class CeCPMainTest extends TestCase {
+public class CeCPMainTest {
 
 	@Test
 	public void testFilterDuplicateAFPs() throws Exception {
@@ -402,7 +401,8 @@ public class CeCPMainTest extends TestCase {
 		return ca1;
 	}
 
-	public void testCECP1() throws IOException, StructureException{
+	@Test
+	public void testCECP1() throws IOException, StructureException {
 
 		String name1 = "PDP:3A2KAc";
 		String name2 = "d1wy5a2";
@@ -418,9 +418,6 @@ public class CeCPMainTest extends TestCase {
 		AFPChain afpChain = algorithm.align(ca1, ca2);
 		CECalculator calculator = algorithm.getCECalculator();
 
-		//               System.out.println(calculator.get);
-		//StructureAlignmentJmol jmol =
-		//StructureAlignmentDisplay.display(afpChain, ca1, ca2);
 		if ( ! (afpChain.getBlockNum() == 1)){
 			System.out.println(calculator.getLcmp());
 			System.out.println(afpChain.toFatcat(ca1, ca2));
