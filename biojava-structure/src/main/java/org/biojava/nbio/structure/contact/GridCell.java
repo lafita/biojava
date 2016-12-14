@@ -65,7 +65,7 @@ public class GridCell {
 	 * Calculates all distances of atoms within this cell returning those that are within the given cutoff
 	 * as a list of Contacts containing the indices of the pair and the calculated distance.
 	 * 
-	 * If {@link Grid#getIAtoms()} is null, distances are within the iAtoms only
+	 * If {@link Grid#getJAtoms()} is null, distances are within the iAtoms only
 	 * @return
 	 */
 	public List<Contact> getContactsWithinCell(){
@@ -141,5 +141,38 @@ public class GridCell {
 
 		return contacts;
 	}
+	
+	/**
+	 * Tests whether any atom in this cell has a contact with the specified query atom
+	 * @param iAtoms the first set of atoms to which the iIndices correspond
+	 * @param jAtoms the second set of atoms to which the jIndices correspond, or null
+	 * @param query test point
+	 * @param cutoff
+	 * @return
+	 */
+	public boolean hasContactToAtom(Point3d[] iAtoms, Point3d[] jAtoms, Point3d query, double cutoff) {
+		for( int i : iIndices ) {
+			double distance = iAtoms[i].distance(query);
+			if( distance<cutoff)
+				return true;
+		}
+		if (jAtoms!=null) {
+			for( int i : jIndices ) {
+				double distance = jAtoms[i].distance(query);
+				if( distance<cutoff)
+					return true;
+			}
+		}
+		return false;
+	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return String.format("GridCell [%d iAtoms,%d jAtoms]",iIndices.size(),jIndices==null?"-":jIndices.size());
+	}
+
+	
 }
