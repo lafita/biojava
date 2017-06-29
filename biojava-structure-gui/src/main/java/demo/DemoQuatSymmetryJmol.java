@@ -66,7 +66,7 @@ public class DemoQuatSymmetryJmol {
 		// Download the biological assembly
 		AtomCache cache = new AtomCache();
 		cache.setUseMmCif(true);
-		Structure structure = cache.getStructure("BIO:" + name + ":1");
+		Structure structure = cache.getBiologicalAssembly(name, true);
 
 		QuatSymmetryParameters sp = new QuatSymmetryParameters();
 		SubunitClustererParameters cp = new SubunitClustererParameters();
