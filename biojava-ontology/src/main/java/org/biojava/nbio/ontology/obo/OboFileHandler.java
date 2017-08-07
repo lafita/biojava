@@ -34,7 +34,8 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-/** A  file handler for .obo files
+/** 
+ * A  file handler for .obo files
  *
  * @author Andreas Prlic
  *

@@ -21,24 +21,30 @@
  * Author: andreas
  *
  */
-
 package org.biojava.nbio.ontology;
 
-import junit.framework.TestCase;
 import org.biojava.nbio.ontology.io.OboParser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import org.junit.Test;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.ParseException;
 import java.util.Set;
 
-public class TestOboFileParsing extends TestCase{
+import static org.junit.Assert.*;
 
-	private static final Logger logger = LoggerFactory.getLogger(TestOboFileParsing.class);
+/**
+ * Test parsing OBO file formats.
+ * 
+ * @author Aleix Lafita
+ *
+ */
+public class TestOboFileParsing {
 
-	public void testParsingBioSapiensOBO(){
+	@Test
+	public void testParsingBioSapiensOBO() throws ParseException, IOException {
+		
 		OboParser parser = new OboParser();
 		InputStream inStream = parser.getClass().getResourceAsStream("/ontology/biosapiens.obo");
 
@@ -46,20 +52,10 @@ public class TestOboFileParsing extends TestCase{
 
 		BufferedReader oboFile = new BufferedReader ( new InputStreamReader ( inStream ) );
 
-		Ontology ontology;
-		try {
-			ontology = parser.parseOBO(oboFile, "BioSapiens", "the BioSapiens ontology");
-			Set<Term> keys = ontology.getTerms();
+		Ontology ontology = parser.parseOBO(oboFile, "BioSapiens", "the BioSapiens ontology");
+		Set<Term> keys = ontology.getTerms();
 
-			assertTrue(keys.size() >4000);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			logger.error("Exception: ", e);
-			fail(e.getMessage());
-		}
-
-
-
+		assertTrue(keys.size() >4000);
 
 	}
 
