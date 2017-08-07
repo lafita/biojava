@@ -20,19 +20,29 @@
  */
 package org.biojava.nbio.structure;
 
+import org.biojava.nbio.structure.align.util.AtomCache;
 import org.biojava.nbio.structure.io.PDBFileReader;
 import org.junit.Test;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInput;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 
 import static org.junit.Assert.*;
 
 /**
- * Test the serialization and deserialization of BioJava structure objects.
+ * Test the serialization of BioJava structure objects.
  * 
  * @author Aleix Lafita
  *
@@ -40,11 +50,11 @@ import static org.junit.Assert.*;
 public class TestStructureSerialization {
 
 	@Test
-	public void testSerializeStructure() throws IOException, StructureException, ClassNotFoundException {
+	public void serializeStructureFromPDB() throws IOException, StructureException, ClassNotFoundException {
 
-		PDBFileReader reader = new PDBFileReader();
-		reader.getFileParsingParameters().setParseSecStruc(true);
-		Structure sin = reader.getStructure("src/test/resources/2gox.pdb");
+		AtomCache cache = new AtomCache();
+		cache.setUseMmCif(false); //PDB
+		Structure sin = cache.getStructure("2gox");
 
 		// Serialize the structure object and keep it in memory
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -52,20 +62,81 @@ public class TestStructureSerialization {
 		objectOut.writeObject(sin);
 		objectOut.close();
 		byte[] bytes = baos.toByteArray();
-		
+
 		// Deserialize the bytes back into a structure object
 		ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
 		ObjectInputStream objectIn = new ObjectInputStream(bais);
 		Structure sout = (Structure) objectIn.readObject();
 		objectIn.close();
-		
+
 		// Test properties of the structures before and after serialization
 		assertEquals(sin.nrModels(), sout.nrModels());
 		assertEquals(sin.getChains().size(), sout.getChains().size());
 		assertEquals(sin.getName(), sout.getName());
-		
+
 		// Test equal string representations
 		assertEquals(sin.toString(), sout.toString());
-		
+
 	}
+
+	@Test
+	public void serializeStructureFromMMCIF() throws IOException, StructureException, ClassNotFoundException {
+
+		AtomCache cache = new AtomCache();
+		cache.setUseMmCif(true);
+		Structure sin = cache.getStructure("2gox");
+
+		// Serialize the structure object and keep it in memory
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ObjectOutputStream objectOut = new ObjectOutputStream(baos);
+		objectOut.writeObject(sin);
+		objectOut.close();
+		byte[] bytes = baos.toByteArray();
+
+		// Deserialize the bytes back into a structure object
+		ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+		ObjectInputStream objectIn = new ObjectInputStream(bais);
+		Structure sout = (Structure) objectIn.readObject();
+		objectIn.close();
+
+		// Test properties of the structures before and after serialization
+		assertEquals(sin.nrModels(), sout.nrModels());
+		assertEquals(sin.getChains().size(), sout.getChains().size());
+		assertEquals(sin.getName(), sout.getName());
+
+		// Test equal string representations
+		assertEquals(sin.toString(), sout.toString());
+
+	}
+
+	@Test
+	public void serializeStructureFromMMTF() throws IOException, StructureException, ClassNotFoundException {
+
+		AtomCache cache = new AtomCache();
+		cache.setUseMmtf(true);
+		Structure sin = cache.getStructure("2gox");
+
+		// Serialize the structure object and keep it in memory
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ObjectOutputStream objectOut = new ObjectOutputStream(baos);
+		objectOut.writeObject(sin);
+		objectOut.close();
+		byte[] bytes = baos.toByteArray();
+
+		// Deserialize the bytes back into a structure object
+		ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+		ObjectInputStream objectIn = new ObjectInputStream(bais);
+		Structure sout = (Structure) objectIn.readObject();
+		objectIn.close();
+
+		// Test properties of the structures before and after serialization
+		assertEquals(sin.nrModels(), sout.nrModels());
+		assertEquals(sin.getChains().size(), sout.getChains().size());
+		assertEquals(sin.getName(), sout.getName());
+
+		// Test equal string representations
+		assertEquals(sin.toString(), sout.toString());
+
+	}
+
 }
