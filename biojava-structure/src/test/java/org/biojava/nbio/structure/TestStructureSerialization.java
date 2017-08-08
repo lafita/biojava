@@ -21,24 +21,13 @@
 package org.biojava.nbio.structure;
 
 import org.biojava.nbio.structure.align.util.AtomCache;
-import org.biojava.nbio.structure.io.PDBFileReader;
 import org.junit.Test;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInput;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-
 import static org.junit.Assert.*;
 
 /**
@@ -54,6 +43,7 @@ public class TestStructureSerialization {
 
 		AtomCache cache = new AtomCache();
 		cache.setUseMmCif(false); //PDB
+		cache.getFileParsingParams().setCreateAtomBonds(true);
 		Structure sin = cache.getStructure("2gox");
 
 		// Serialize the structure object and keep it in memory
@@ -84,6 +74,7 @@ public class TestStructureSerialization {
 
 		AtomCache cache = new AtomCache();
 		cache.setUseMmCif(true);
+		cache.getFileParsingParams().setCreateAtomBonds(true);
 		Structure sin = cache.getStructure("2gox");
 
 		// Serialize the structure object and keep it in memory
